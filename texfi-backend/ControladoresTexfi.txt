@@ -1,0 +1,1665 @@
+## File Structure
+```
+texfi/
+└── texfi-backend
+    └── src
+        └── controllers
+            ├── cliente.controller.ts
+            ├── detalle-produccion.controller.ts
+            ├── maquina.controller.ts
+            ├── operacion-producto.controller.ts
+            ├── operacion.controller.ts
+            ├── operario.controller.ts
+            ├── produccion-maquina.controller.ts
+            ├── produccion-operario.controller.ts
+            ├── produccion.controller.ts
+            ├── producto.controller.ts
+            ├── taller-cliente.controller.ts
+            ├── taller.controller.ts
+            └── usuario.controller.ts
+```
+
+### `texfi-backend\src\controllers\cliente.controller.ts`
+
+```typescript
+import {Count, CountSchema, Filter, FilterExcludingWhere, repository, Where} from '@loopback/repository';
+import {post, param, get, getModelSchemaRef, patch, put, del, requestBody, response} from '@loopback/rest';
+import {Cliente} from '../models';
+import {ClienteRepository} from '../repositories';
+
+export class ClienteController {
+  constructor(
+    @repository(ClienteRepository)
+    public clienteRepository: ClienteRepository,
+  ) {}
+  @post('/clientes')
+  @response(200, {
+    description: 'Cliente model instance',
+    content: {'application/json': {schema: getModelSchemaRef(Cliente)}},
+  })
+  async create(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Cliente, {
+            title: 'NewCliente',
+            exclude: ['id'],
+          }),
+        },
+      },
+    })
+    cliente: Omit<Cliente, 'id'>,
+  ): Promise<Cliente> {
+    return this.clienteRepository.create(cliente);
+  }
+  @get('/clientes/count')
+  @response(200, {
+    description: 'Cliente model count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async count(@param.where(Cliente) where?: Where<Cliente>): Promise<Count> {
+    return this.clienteRepository.count(where);
+  }
+  @get('/clientes')
+  @response(200, {
+    description: 'Array of Cliente model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(Cliente, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async find(@param.filter(Cliente) filter?: Filter<Cliente>): Promise<Cliente[]> {
+    return this.clienteRepository.find(filter);
+  }
+  @patch('/clientes')
+  @response(200, {
+    description: 'Cliente PATCH success count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async updateAll(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Cliente, {partial: true}),
+        },
+      },
+    })
+    cliente: Cliente,
+    @param.where(Cliente) where?: Where<Cliente>,
+  ): Promise<Count> {
+    return this.clienteRepository.updateAll(cliente, where);
+  }
+  @get('/clientes/{id}')
+  @response(200, {
+    description: 'Cliente model instance',
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(Cliente, {includeRelations: true}),
+      },
+    },
+  })
+  async findById(
+    @param.path.number('id') id: number,
+    @param.filter(Cliente, {exclude: 'where'}) filter?: FilterExcludingWhere<Cliente>,
+  ): Promise<Cliente> {
+    return this.clienteRepository.findById(id, filter);
+  }
+  @patch('/clientes/{id}')
+  @response(204, {
+    description: 'Cliente PATCH success',
+  })
+  async updateById(
+    @param.path.number('id') id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Cliente, {partial: true}),
+        },
+      },
+    })
+    cliente: Cliente,
+  ): Promise<void> {
+    await this.clienteRepository.updateById(id, cliente);
+  }
+  @put('/clientes/{id}')
+  @response(204, {
+    description: 'Cliente PUT success',
+  })
+  async replaceById(@param.path.number('id') id: number, @requestBody() cliente: Cliente): Promise<void> {
+    await this.clienteRepository.replaceById(id, cliente);
+  }
+  @del('/clientes/{id}')
+  @response(204, {
+    description: 'Cliente DELETE success',
+  })
+  async deleteById(@param.path.number('id') id: number): Promise<void> {
+    await this.clienteRepository.deleteById(id);
+  }
+}
+
+```
+
+### `texfi-backend\src\controllers\detalle-produccion.controller.ts`
+
+```typescript
+import {Count, CountSchema, Filter, FilterExcludingWhere, repository, Where} from '@loopback/repository';
+import {post, param, get, getModelSchemaRef, patch, put, del, requestBody, response} from '@loopback/rest';
+import {DetalleProduccion} from '../models';
+import {DetalleProduccionRepository} from '../repositories';
+
+export class DetalleProduccionController {
+  constructor(
+    @repository(DetalleProduccionRepository)
+    public detalleProduccionRepository: DetalleProduccionRepository,
+  ) {}
+  @post('/detalles-produccion')
+  @response(200, {
+    description: 'DetalleProduccion model instance',
+    content: {'application/json': {schema: getModelSchemaRef(DetalleProduccion)}},
+  })
+  async create(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(DetalleProduccion, {
+            title: 'NewDetalleProduccion',
+            exclude: ['id'],
+          }),
+        },
+      },
+    })
+    detalleProduccion: Omit<DetalleProduccion, 'id'>,
+  ): Promise<DetalleProduccion> {
+    return this.detalleProduccionRepository.create(detalleProduccion);
+  }
+  @get('/detalles-produccion/count')
+  @response(200, {
+    description: 'DetalleProduccion model count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async count(@param.where(DetalleProduccion) where?: Where<DetalleProduccion>): Promise<Count> {
+    return this.detalleProduccionRepository.count(where);
+  }
+  @get('/detalles-produccion')
+  @response(200, {
+    description: 'Array of DetalleProduccion model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(DetalleProduccion, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async find(@param.filter(DetalleProduccion) filter?: Filter<DetalleProduccion>): Promise<DetalleProduccion[]> {
+    return this.detalleProduccionRepository.find(filter);
+  }
+  @patch('/detalles-produccion')
+  @response(200, {
+    description: 'DetalleProduccion PATCH success count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async updateAll(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(DetalleProduccion, {partial: true}),
+        },
+      },
+    })
+    detalleProduccion: DetalleProduccion,
+    @param.where(DetalleProduccion) where?: Where<DetalleProduccion>,
+  ): Promise<Count> {
+    return this.detalleProduccionRepository.updateAll(detalleProduccion, where);
+  }
+  @get('/detalles-produccion/{id}')
+  @response(200, {
+    description: 'DetalleProduccion model instance',
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(DetalleProduccion, {includeRelations: true}),
+      },
+    },
+  })
+  async findById(
+    @param.path.number('id') id: number,
+    @param.filter(DetalleProduccion, {exclude: 'where'}) filter?: FilterExcludingWhere<DetalleProduccion>,
+  ): Promise<DetalleProduccion> {
+    return this.detalleProduccionRepository.findById(id, filter);
+  }
+  @patch('/detalles-produccion/{id}')
+  @response(204, {
+    description: 'DetalleProduccion PATCH success',
+  })
+  async updateById(
+    @param.path.number('id') id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(DetalleProduccion, {partial: true}),
+        },
+      },
+    })
+    detalleProduccion: DetalleProduccion,
+  ): Promise<void> {
+    await this.detalleProduccionRepository.updateById(id, detalleProduccion);
+  }
+  @put('/detalles-produccion/{id}')
+  @response(204, {
+    description: 'DetalleProduccion PUT success',
+  })
+  async replaceById(@param.path.number('id') id: number, @requestBody() detalleProduccion: DetalleProduccion): Promise<void> {
+    await this.detalleProduccionRepository.replaceById(id, detalleProduccion);
+  }
+  @del('/detalles-produccion/{id}')
+  @response(204, {
+    description: 'DetalleProduccion DELETE success',
+  })
+  async deleteById(@param.path.number('id') id: number): Promise<void> {
+    await this.detalleProduccionRepository.deleteById(id);
+  }
+}
+
+```
+
+### `texfi-backend\src\controllers\maquina.controller.ts`
+
+```typescript
+import {Count, CountSchema, Filter, FilterExcludingWhere, repository, Where} from '@loopback/repository';
+import {post, param, get, getModelSchemaRef, patch, put, del, requestBody, response} from '@loopback/rest';
+import {Maquina} from '../models';
+import {MaquinaRepository} from '../repositories';
+
+export class MaquinaController {
+  constructor(
+    @repository(MaquinaRepository)
+    public maquinaRepository: MaquinaRepository,
+  ) {}
+  @post('/maquinas')
+  @response(200, {
+    description: 'Maquina model instance',
+    content: {'application/json': {schema: getModelSchemaRef(Maquina)}},
+  })
+  async create(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Maquina, {
+            title: 'NewMaquina',
+            exclude: ['id'],
+          }),
+        },
+      },
+    })
+    maquina: Omit<Maquina, 'id'>,
+  ): Promise<Maquina> {
+    return this.maquinaRepository.create(maquina);
+  }
+  @get('/maquinas/count')
+  @response(200, {
+    description: 'Maquina model count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async count(@param.where(Maquina) where?: Where<Maquina>): Promise<Count> {
+    return this.maquinaRepository.count(where);
+  }
+  @get('/maquinas')
+  @response(200, {
+    description: 'Array of Maquina model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(Maquina, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async find(@param.filter(Maquina) filter?: Filter<Maquina>): Promise<Maquina[]> {
+    return this.maquinaRepository.find(filter);
+  }
+  @patch('/maquinas')
+  @response(200, {
+    description: 'Maquina PATCH success count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async updateAll(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Maquina, {partial: true}),
+        },
+      },
+    })
+    maquina: Maquina,
+    @param.where(Maquina) where?: Where<Maquina>,
+  ): Promise<Count> {
+    return this.maquinaRepository.updateAll(maquina, where);
+  }
+  @get('/maquinas/{id}')
+  @response(200, {
+    description: 'Maquina model instance',
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(Maquina, {includeRelations: true}),
+      },
+    },
+  })
+  async findById(
+    @param.path.number('id') id: number,
+    @param.filter(Maquina, {exclude: 'where'}) filter?: FilterExcludingWhere<Maquina>,
+  ): Promise<Maquina> {
+    return this.maquinaRepository.findById(id, filter);
+  }
+  @patch('/maquinas/{id}')
+  @response(204, {
+    description: 'Maquina PATCH success',
+  })
+  async updateById(
+    @param.path.number('id') id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Maquina, {partial: true}),
+        },
+      },
+    })
+    maquina: Maquina,
+  ): Promise<void> {
+    await this.maquinaRepository.updateById(id, maquina);
+  }
+  @put('/maquinas/{id}')
+  @response(204, {
+    description: 'Maquina PUT success',
+  })
+  async replaceById(@param.path.number('id') id: number, @requestBody() maquina: Maquina): Promise<void> {
+    await this.maquinaRepository.replaceById(id, maquina);
+  }
+  @del('/maquinas/{id}')
+  @response(204, {
+    description: 'Maquina DELETE success',
+  })
+  async deleteById(@param.path.number('id') id: number): Promise<void> {
+    await this.maquinaRepository.deleteById(id);
+  }
+}
+
+```
+
+### `texfi-backend\src\controllers\operacion-producto.controller.ts`
+
+```typescript
+import {Count, CountSchema, Filter, FilterExcludingWhere, repository, Where} from '@loopback/repository';
+import {post, param, get, getModelSchemaRef, patch, put, del, requestBody, response} from '@loopback/rest';
+import {OperacionProducto} from '../models';
+import {OperacionProductoRepository} from '../repositories';
+
+export class OperacionProductoController {
+  constructor(
+    @repository(OperacionProductoRepository)
+    public operacionProductoRepository: OperacionProductoRepository,
+  ) {}
+  @post('/operaciones-producto')
+  @response(200, {
+    description: 'OperacionProducto model instance',
+    content: {'application/json': {schema: getModelSchemaRef(OperacionProducto)}},
+  })
+  async create(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(OperacionProducto, {
+            title: 'NewOperacionProducto',
+            exclude: ['id'],
+          }),
+        },
+      },
+    })
+    operacionProducto: Omit<OperacionProducto, 'id'>,
+  ): Promise<OperacionProducto> {
+    return this.operacionProductoRepository.create(operacionProducto);
+  }
+  @get('/operaciones-producto/count')
+  @response(200, {
+    description: 'OperacionProducto model count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async count(@param.where(OperacionProducto) where?: Where<OperacionProducto>): Promise<Count> {
+    return this.operacionProductoRepository.count(where);
+  }
+  @get('/operaciones-producto')
+  @response(200, {
+    description: 'Array of OperacionProducto model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(OperacionProducto, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async find(@param.filter(OperacionProducto) filter?: Filter<OperacionProducto>): Promise<OperacionProducto[]> {
+    return this.operacionProductoRepository.find(filter);
+  }
+  @patch('/operaciones-producto')
+  @response(200, {
+    description: 'OperacionProducto PATCH success count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async updateAll(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(OperacionProducto, {partial: true}),
+        },
+      },
+    })
+    operacionProducto: OperacionProducto,
+    @param.where(OperacionProducto) where?: Where<OperacionProducto>,
+  ): Promise<Count> {
+    return this.operacionProductoRepository.updateAll(operacionProducto, where);
+  }
+  @get('/operaciones-producto/{id}')
+  @response(200, {
+    description: 'OperacionProducto model instance',
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(OperacionProducto, {includeRelations: true}),
+      },
+    },
+  })
+  async findById(
+    @param.path.number('id') id: number,
+    @param.filter(OperacionProducto, {exclude: 'where'}) filter?: FilterExcludingWhere<OperacionProducto>,
+  ): Promise<OperacionProducto> {
+    return this.operacionProductoRepository.findById(id, filter);
+  }
+  @patch('/operaciones-producto/{id}')
+  @response(204, {
+    description: 'OperacionProducto PATCH success',
+  })
+  async updateById(
+    @param.path.number('id') id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(OperacionProducto, {partial: true}),
+        },
+      },
+    })
+    operacionProducto: OperacionProducto,
+  ): Promise<void> {
+    await this.operacionProductoRepository.updateById(id, operacionProducto);
+  }
+  @put('/operaciones-producto/{id}')
+  @response(204, {
+    description: 'OperacionProducto PUT success',
+  })
+  async replaceById(@param.path.number('id') id: number, @requestBody() operacionProducto: OperacionProducto): Promise<void> {
+    await this.operacionProductoRepository.replaceById(id, operacionProducto);
+  }
+  @del('/operaciones-producto/{id}')
+  @response(204, {
+    description: 'OperacionProducto DELETE success',
+  })
+  async deleteById(@param.path.number('id') id: number): Promise<void> {
+    await this.operacionProductoRepository.deleteById(id);
+  }
+}
+
+```
+
+### `texfi-backend\src\controllers\operacion.controller.ts`
+
+```typescript
+import {Count, CountSchema, Filter, FilterExcludingWhere, repository, Where} from '@loopback/repository';
+import {post, param, get, getModelSchemaRef, patch, put, del, requestBody, response} from '@loopback/rest';
+import {Operacion} from '../models';
+import {OperacionRepository} from '../repositories';
+
+export class OperacionController {
+  constructor(
+    @repository(OperacionRepository)
+    public operacionRepository: OperacionRepository,
+  ) {}
+  @post('/operaciones')
+  @response(200, {
+    description: 'Operacion model instance',
+    content: {'application/json': {schema: getModelSchemaRef(Operacion)}},
+  })
+  async create(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Operacion, {
+            title: 'NewOperacion',
+            exclude: ['id'],
+          }),
+        },
+      },
+    })
+    operacion: Omit<Operacion, 'id'>,
+  ): Promise<Operacion> {
+    return this.operacionRepository.create(operacion);
+  }
+  @get('/operaciones/count')
+  @response(200, {
+    description: 'Operacion model count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async count(@param.where(Operacion) where?: Where<Operacion>): Promise<Count> {
+    return this.operacionRepository.count(where);
+  }
+  @get('/operaciones')
+  @response(200, {
+    description: 'Array of Operacion model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(Operacion, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async find(@param.filter(Operacion) filter?: Filter<Operacion>): Promise<Operacion[]> {
+    return this.operacionRepository.find(filter);
+  }
+  @patch('/operaciones')
+  @response(200, {
+    description: 'Operacion PATCH success count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async updateAll(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Operacion, {partial: true}),
+        },
+      },
+    })
+    operacion: Operacion,
+    @param.where(Operacion) where?: Where<Operacion>,
+  ): Promise<Count> {
+    return this.operacionRepository.updateAll(operacion, where);
+  }
+  @get('/operaciones/{id}')
+  @response(200, {
+    description: 'Operacion model instance',
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(Operacion, {includeRelations: true}),
+      },
+    },
+  })
+  async findById(
+    @param.path.number('id') id: number,
+    @param.filter(Operacion, {exclude: 'where'}) filter?: FilterExcludingWhere<Operacion>,
+  ): Promise<Operacion> {
+    return this.operacionRepository.findById(id, filter);
+  }
+  @patch('/operaciones/{id}')
+  @response(204, {
+    description: 'Operacion PATCH success',
+  })
+  async updateById(
+    @param.path.number('id') id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Operacion, {partial: true}),
+        },
+      },
+    })
+    operacion: Operacion,
+  ): Promise<void> {
+    await this.operacionRepository.updateById(id, operacion);
+  }
+  @put('/operaciones/{id}')
+  @response(204, {
+    description: 'Operacion PUT success',
+  })
+  async replaceById(@param.path.number('id') id: number, @requestBody() operacion: Operacion): Promise<void> {
+    await this.operacionRepository.replaceById(id, operacion);
+  }
+  @del('/operaciones/{id}')
+  @response(204, {
+    description: 'Operacion DELETE success',
+  })
+  async deleteById(@param.path.number('id') id: number): Promise<void> {
+    await this.operacionRepository.deleteById(id);
+  }
+}
+
+```
+
+### `texfi-backend\src\controllers\operario.controller.ts`
+
+```typescript
+import {Count, CountSchema, Filter, FilterExcludingWhere, repository, Where} from '@loopback/repository';
+import {post, param, get, getModelSchemaRef, patch, put, del, requestBody, response} from '@loopback/rest';
+import {Operario} from '../models';
+import {OperarioRepository} from '../repositories';
+
+export class OperarioController {
+  constructor(
+    @repository(OperarioRepository)
+    public operarioRepository: OperarioRepository,
+  ) {}
+  @post('/operarios')
+  @response(200, {
+    description: 'Operario model instance',
+    content: {'application/json': {schema: getModelSchemaRef(Operario)}},
+  })
+  async create(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Operario, {
+            title: 'NewOperario',
+            exclude: ['id'],
+          }),
+        },
+      },
+    })
+    operario: Omit<Operario, 'id'>,
+  ): Promise<Operario> {
+    return this.operarioRepository.create(operario);
+  }
+  @get('/operarios/count')
+  @response(200, {
+    description: 'Operario model count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async count(@param.where(Operario) where?: Where<Operario>): Promise<Count> {
+    return this.operarioRepository.count(where);
+  }
+  @get('/operarios')
+  @response(200, {
+    description: 'Array of Operario model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(Operario, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async find(@param.filter(Operario) filter?: Filter<Operario>): Promise<Operario[]> {
+    return this.operarioRepository.find(filter);
+  }
+  @patch('/operarios')
+  @response(200, {
+    description: 'Operario PATCH success count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async updateAll(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Operario, {partial: true}),
+        },
+      },
+    })
+    operario: Operario,
+    @param.where(Operario) where?: Where<Operario>,
+  ): Promise<Count> {
+    return this.operarioRepository.updateAll(operario, where);
+  }
+  @get('/operarios/{id}')
+  @response(200, {
+    description: 'Operario model instance',
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(Operario, {includeRelations: true}),
+      },
+    },
+  })
+  async findById(
+    @param.path.number('id') id: number,
+    @param.filter(Operario, {exclude: 'where'}) filter?: FilterExcludingWhere<Operario>,
+  ): Promise<Operario> {
+    return this.operarioRepository.findById(id, filter);
+  }
+  @patch('/operarios/{id}')
+  @response(204, {
+    description: 'Operario PATCH success',
+  })
+  async updateById(
+    @param.path.number('id') id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Operario, {partial: true}),
+        },
+      },
+    })
+    operario: Operario,
+  ): Promise<void> {
+    await this.operarioRepository.updateById(id, operario);
+  }
+  @put('/operarios/{id}')
+  @response(204, {
+    description: 'Operario PUT success',
+  })
+  async replaceById(@param.path.number('id') id: number, @requestBody() operario: Operario): Promise<void> {
+    await this.operarioRepository.replaceById(id, operario);
+  }
+  @del('/operarios/{id}')
+  @response(204, {
+    description: 'Operario DELETE success',
+  })
+  async deleteById(@param.path.number('id') id: number): Promise<void> {
+    await this.operarioRepository.deleteById(id);
+  }
+}
+
+```
+
+### `texfi-backend\src\controllers\produccion-maquina.controller.ts`
+
+```typescript
+import {Count, CountSchema, Filter, FilterExcludingWhere, repository, Where} from '@loopback/repository';
+import {post, param, get, getModelSchemaRef, patch, put, del, requestBody, response} from '@loopback/rest';
+import {ProduccionMaquina} from '../models';
+import {ProduccionMaquinaRepository} from '../repositories';
+
+export class ProduccionMaquinaController {
+  constructor(
+    @repository(ProduccionMaquinaRepository)
+    public produccionMaquinaRepository: ProduccionMaquinaRepository,
+  ) {}
+  @post('/produccion-maquinas')
+  @response(200, {
+    description: 'ProduccionMaquina model instance',
+    content: {'application/json': {schema: getModelSchemaRef(ProduccionMaquina)}},
+  })
+  async create(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(ProduccionMaquina, {
+            title: 'NewProduccionMaquina',
+            exclude: ['id'],
+          }),
+        },
+      },
+    })
+    produccionMaquina: Omit<ProduccionMaquina, 'id'>,
+  ): Promise<ProduccionMaquina> {
+    return this.produccionMaquinaRepository.create(produccionMaquina);
+  }
+  @get('/produccion-maquinas/count')
+  @response(200, {
+    description: 'ProduccionMaquina model count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async count(@param.where(ProduccionMaquina) where?: Where<ProduccionMaquina>): Promise<Count> {
+    return this.produccionMaquinaRepository.count(where);
+  }
+  @get('/produccion-maquinas')
+  @response(200, {
+    description: 'Array of ProduccionMaquina model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(ProduccionMaquina, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async find(@param.filter(ProduccionMaquina) filter?: Filter<ProduccionMaquina>): Promise<ProduccionMaquina[]> {
+    return this.produccionMaquinaRepository.find(filter);
+  }
+  @patch('/produccion-maquinas')
+  @response(200, {
+    description: 'ProduccionMaquina PATCH success count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async updateAll(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(ProduccionMaquina, {partial: true}),
+        },
+      },
+    })
+    produccionMaquina: ProduccionMaquina,
+    @param.where(ProduccionMaquina) where?: Where<ProduccionMaquina>,
+  ): Promise<Count> {
+    return this.produccionMaquinaRepository.updateAll(produccionMaquina, where);
+  }
+  @get('/produccion-maquinas/{id}')
+  @response(200, {
+    description: 'ProduccionMaquina model instance',
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(ProduccionMaquina, {includeRelations: true}),
+      },
+    },
+  })
+  async findById(
+    @param.path.number('id') id: number,
+    @param.filter(ProduccionMaquina, {exclude: 'where'}) filter?: FilterExcludingWhere<ProduccionMaquina>,
+  ): Promise<ProduccionMaquina> {
+    return this.produccionMaquinaRepository.findById(id, filter);
+  }
+  @patch('/produccion-maquinas/{id}')
+  @response(204, {
+    description: 'ProduccionMaquina PATCH success',
+  })
+  async updateById(
+    @param.path.number('id') id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(ProduccionMaquina, {partial: true}),
+        },
+      },
+    })
+    produccionMaquina: ProduccionMaquina,
+  ): Promise<void> {
+    await this.produccionMaquinaRepository.updateById(id, produccionMaquina);
+  }
+  @put('/produccion-maquinas/{id}')
+  @response(204, {
+    description: 'ProduccionMaquina PUT success',
+  })
+  async replaceById(@param.path.number('id') id: number, @requestBody() produccionMaquina: ProduccionMaquina): Promise<void> {
+    await this.produccionMaquinaRepository.replaceById(id, produccionMaquina);
+  }
+  @del('/produccion-maquinas/{id}')
+  @response(204, {
+    description: 'ProduccionMaquina DELETE success',
+  })
+  async deleteById(@param.path.number('id') id: number): Promise<void> {
+    await this.produccionMaquinaRepository.deleteById(id);
+  }
+}
+
+```
+
+### `texfi-backend\src\controllers\produccion-operario.controller.ts`
+
+```typescript
+import {
+  Count,
+  CountSchema,
+  Filter,
+  FilterExcludingWhere,
+  repository,
+  Where,
+} from '@loopback/repository';
+import {
+  post,
+  param,
+  get,
+  getModelSchemaRef,
+  patch,
+  put,
+  del,
+  requestBody,
+  response,
+} from '@loopback/rest';
+import {ProduccionOperario} from '../models';
+import {ProduccionOperarioRepository} from '../repositories';
+
+export class ProduccionOperarioController {
+  constructor(
+    @repository(ProduccionOperarioRepository)
+    public produccionOperarioRepository : ProduccionOperarioRepository,
+  ) {}
+
+  @post('/produccion-operarios')
+  @response(200, {
+    description: 'ProduccionOperario model instance',
+    content: {'application/json': {schema: getModelSchemaRef(ProduccionOperario)}},
+  })
+  async create(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(ProduccionOperario, {
+            title: 'NewProduccionOperario',
+            exclude: ['id'],
+          }),
+        },
+      },
+    })
+    produccionOperario: Omit<ProduccionOperario, 'id'>,
+  ): Promise<ProduccionOperario> {
+    return this.produccionOperarioRepository.create(produccionOperario);
+  }
+
+  @get('/produccion-operarios/count')
+  @response(200, {
+    description: 'ProduccionOperario model count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async count(
+    @param.where(ProduccionOperario) where?: Where<ProduccionOperario>,
+  ): Promise<Count> {
+    return this.produccionOperarioRepository.count(where);
+  }
+
+  @get('/produccion-operarios')
+  @response(200, {
+    description: 'Array of ProduccionOperario model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(ProduccionOperario, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async find(
+    @param.filter(ProduccionOperario) filter?: Filter<ProduccionOperario>,
+  ): Promise<ProduccionOperario[]> {
+    return this.produccionOperarioRepository.find(filter);
+  }
+
+  @patch('/produccion-operarios')
+  @response(200, {
+    description: 'ProduccionOperario PATCH success count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async updateAll(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(ProduccionOperario, {partial: true}),
+        },
+      },
+    })
+    produccionOperario: ProduccionOperario,
+    @param.where(ProduccionOperario) where?: Where<ProduccionOperario>,
+  ): Promise<Count> {
+    return this.produccionOperarioRepository.updateAll(produccionOperario, where);
+  }
+
+  @get('/produccion-operarios/{id}')
+  @response(200, {
+    description: 'ProduccionOperario model instance',
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(ProduccionOperario, {includeRelations: true}),
+      },
+    },
+  })
+  async findById(
+    @param.path.number('id') id: number,
+    @param.filter(ProduccionOperario, {exclude: 'where'}) filter?: FilterExcludingWhere<ProduccionOperario>
+  ): Promise<ProduccionOperario> {
+    return this.produccionOperarioRepository.findById(id, filter);
+  }
+
+  @patch('/produccion-operarios/{id}')
+  @response(204, {
+    description: 'ProduccionOperario PATCH success',
+  })
+  async updateById(
+    @param.path.number('id') id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(ProduccionOperario, {partial: true}),
+        },
+      },
+    })
+    produccionOperario: ProduccionOperario,
+  ): Promise<void> {
+    await this.produccionOperarioRepository.updateById(id, produccionOperario);
+  }
+
+  @put('/produccion-operarios/{id}')
+  @response(204, {
+    description: 'ProduccionOperario PUT success',
+  })
+  async replaceById(
+    @param.path.number('id') id: number,
+    @requestBody() produccionOperario: ProduccionOperario,
+  ): Promise<void> {
+    await this.produccionOperarioRepository.replaceById(id, produccionOperario);
+  }
+
+  @del('/produccion-operarios/{id}')
+  @response(204, {
+    description: 'ProduccionOperario DELETE success',
+  })
+  async deleteById(@param.path.number('id') id: number): Promise<void> {
+    await this.produccionOperarioRepository.deleteById(id);
+  }
+}
+
+```
+
+### `texfi-backend\src\controllers\produccion.controller.ts`
+
+```typescript
+import {Count, CountSchema, Filter, FilterExcludingWhere, repository, Where} from '@loopback/repository';
+import {post, param, get, getModelSchemaRef, patch, put, del, requestBody, response} from '@loopback/rest';
+import {Produccion} from '../models';
+import {ProduccionRepository} from '../repositories';
+
+export class ProduccionController {
+  constructor(
+    @repository(ProduccionRepository)
+    public produccionRepository: ProduccionRepository,
+  ) {}
+  @post('/producciones')
+  @response(200, {
+    description: 'Produccion model instance',
+    content: {'application/json': {schema: getModelSchemaRef(Produccion)}},
+  })
+  async create(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Produccion, {
+            title: 'NewProduccion',
+            exclude: ['id'],
+          }),
+        },
+      },
+    })
+    produccion: Omit<Produccion, 'id'>,
+  ): Promise<Produccion> {
+    return this.produccionRepository.create(produccion);
+  }
+  @get('/producciones/count')
+  @response(200, {
+    description: 'Produccion model count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async count(@param.where(Produccion) where?: Where<Produccion>): Promise<Count> {
+    return this.produccionRepository.count(where);
+  }
+  @get('/producciones')
+  @response(200, {
+    description: 'Array of Produccion model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(Produccion, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async find(@param.filter(Produccion) filter?: Filter<Produccion>): Promise<Produccion[]> {
+    return this.produccionRepository.find(filter);
+  }
+  @patch('/producciones')
+  @response(200, {
+    description: 'Produccion PATCH success count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async updateAll(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Produccion, {partial: true}),
+        },
+      },
+    })
+    produccion: Produccion,
+    @param.where(Produccion) where?: Where<Produccion>,
+  ): Promise<Count> {
+    return this.produccionRepository.updateAll(produccion, where);
+  }
+  @get('/producciones/{id}')
+  @response(200, {
+    description: 'Produccion model instance',
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(Produccion, {includeRelations: true}),
+      },
+    },
+  })
+  async findById(
+    @param.path.number('id') id: number,
+    @param.filter(Produccion, {exclude: 'where'}) filter?: FilterExcludingWhere<Produccion>,
+  ): Promise<Produccion> {
+    return this.produccionRepository.findById(id, filter);
+  }
+  @patch('/producciones/{id}')
+  @response(204, {
+    description: 'Produccion PATCH success',
+  })
+  async updateById(
+    @param.path.number('id') id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Produccion, {partial: true}),
+        },
+      },
+    })
+    produccion: Produccion,
+  ): Promise<void> {
+    await this.produccionRepository.updateById(id, produccion);
+  }
+  @put('/producciones/{id}')
+  @response(204, {
+    description: 'Produccion PUT success',
+  })
+  async replaceById(@param.path.number('id') id: number, @requestBody() produccion: Produccion): Promise<void> {
+    await this.produccionRepository.replaceById(id, produccion);
+  }
+  @del('/producciones/{id}')
+  @response(204, {
+    description: 'Produccion DELETE success',
+  })
+  async deleteById(@param.path.number('id') id: number): Promise<void> {
+    await this.produccionRepository.deleteById(id);
+  }
+}
+
+```
+
+### `texfi-backend\src\controllers\producto.controller.ts`
+
+```typescript
+import {Count, CountSchema, Filter, FilterExcludingWhere, repository, Where} from '@loopback/repository';
+import {post, param, get, getModelSchemaRef, patch, put, del, requestBody, response} from '@loopback/rest';
+import {Producto} from '../models';
+import {ProductoRepository} from '../repositories';
+
+export class ProductoController {
+  constructor(
+    @repository(ProductoRepository)
+    public productoRepository: ProductoRepository,
+  ) {}
+  @post('/productos')
+  @response(200, {
+    description: 'Producto model instance',
+    content: {'application/json': {schema: getModelSchemaRef(Producto)}},
+  })
+  async create(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Producto, {
+            title: 'NewProducto',
+            exclude: ['id'],
+          }),
+        },
+      },
+    })
+    producto: Omit<Producto, 'id'>,
+  ): Promise<Producto> {
+    return this.productoRepository.create(producto);
+  }
+  @get('/productos/count')
+  @response(200, {
+    description: 'Producto model count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async count(@param.where(Producto) where?: Where<Producto>): Promise<Count> {
+    return this.productoRepository.count(where);
+  }
+  @get('/productos')
+  @response(200, {
+    description: 'Array of Producto model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(Producto, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async find(@param.filter(Producto) filter?: Filter<Producto>): Promise<Producto[]> {
+    return this.productoRepository.find(filter);
+  }
+  @patch('/productos')
+  @response(200, {
+    description: 'Producto PATCH success count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async updateAll(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Producto, {partial: true}),
+        },
+      },
+    })
+    producto: Producto,
+    @param.where(Producto) where?: Where<Producto>,
+  ): Promise<Count> {
+    return this.productoRepository.updateAll(producto, where);
+  }
+  @get('/productos/{id}')
+  @response(200, {
+    description: 'Producto model instance',
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(Producto, {includeRelations: true}),
+      },
+    },
+  })
+  async findById(
+    @param.path.number('id') id: number,
+    @param.filter(Producto, {exclude: 'where'}) filter?: FilterExcludingWhere<Producto>,
+  ): Promise<Producto> {
+    return this.productoRepository.findById(id, filter);
+  }
+  @patch('/productos/{id}')
+  @response(204, {
+    description: 'Producto PATCH success',
+  })
+  async updateById(
+    @param.path.number('id') id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Producto, {partial: true}),
+        },
+      },
+    })
+    producto: Producto,
+  ): Promise<void> {
+    await this.productoRepository.updateById(id, producto);
+  }
+  @put('/productos/{id}')
+  @response(204, {
+    description: 'Producto PUT success',
+  })
+  async replaceById(@param.path.number('id') id: number, @requestBody() producto: Producto): Promise<void> {
+    await this.productoRepository.replaceById(id, producto);
+  }
+  @del('/productos/{id}')
+  @response(204, {
+    description: 'Producto DELETE success',
+  })
+  async deleteById(@param.path.number('id') id: number): Promise<void> {
+    await this.productoRepository.deleteById(id);
+  }
+}
+
+```
+
+### `texfi-backend\src\controllers\taller-cliente.controller.ts`
+
+```typescript
+import {Count, CountSchema, Filter, FilterExcludingWhere, repository, Where} from '@loopback/repository';
+import {post, param, get, getModelSchemaRef, patch, put, del, requestBody, response} from '@loopback/rest';
+import {TallerCliente} from '../models';
+import {TallerClienteRepository} from '../repositories';
+
+export class TallerClienteController {
+  constructor(
+    @repository(TallerClienteRepository)
+    public tallerClienteRepository: TallerClienteRepository,
+  ) {}
+  @post('/taller-clientes')
+  @response(200, {
+    description: 'TallerCliente model instance',
+    content: {'application/json': {schema: getModelSchemaRef(TallerCliente)}},
+  })
+  async create(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(TallerCliente, {
+            title: 'NewTallerCliente',
+            exclude: ['id'],
+          }),
+        },
+      },
+    })
+    tallerCliente: Omit<TallerCliente, 'id'>,
+  ): Promise<TallerCliente> {
+    return this.tallerClienteRepository.create(tallerCliente);
+  }
+  @get('/taller-clientes/count')
+  @response(200, {
+    description: 'TallerCliente model count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async count(@param.where(TallerCliente) where?: Where<TallerCliente>): Promise<Count> {
+    return this.tallerClienteRepository.count(where);
+  }
+  @get('/taller-clientes')
+  @response(200, {
+    description: 'Array of TallerCliente model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(TallerCliente, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async find(@param.filter(TallerCliente) filter?: Filter<TallerCliente>): Promise<TallerCliente[]> {
+    return this.tallerClienteRepository.find(filter);
+  }
+  @patch('/taller-clientes')
+  @response(200, {
+    description: 'TallerCliente PATCH success count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async updateAll(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(TallerCliente, {partial: true}),
+        },
+      },
+    })
+    tallerCliente: TallerCliente,
+    @param.where(TallerCliente) where?: Where<TallerCliente>,
+  ): Promise<Count> {
+    return this.tallerClienteRepository.updateAll(tallerCliente, where);
+  }
+  @get('/taller-clientes/{id}')
+  @response(200, {
+    description: 'TallerCliente model instance',
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(TallerCliente, {includeRelations: true}),
+      },
+    },
+  })
+  async findById(
+    @param.path.number('id') id: number,
+    @param.filter(TallerCliente, {exclude: 'where'}) filter?: FilterExcludingWhere<TallerCliente>,
+  ): Promise<TallerCliente> {
+    return this.tallerClienteRepository.findById(id, filter);
+  }
+  @patch('/taller-clientes/{id}')
+  @response(204, {
+    description: 'TallerCliente PATCH success',
+  })
+  async updateById(
+    @param.path.number('id') id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(TallerCliente, {partial: true}),
+        },
+      },
+    })
+    tallerCliente: TallerCliente,
+  ): Promise<void> {
+    await this.tallerClienteRepository.updateById(id, tallerCliente);
+  }
+  @put('/taller-clientes/{id}')
+  @response(204, {
+    description: 'TallerCliente PUT success',
+  })
+  async replaceById(@param.path.number('id') id: number, @requestBody() tallerCliente: TallerCliente): Promise<void> {
+    await this.tallerClienteRepository.replaceById(id, tallerCliente);
+  }
+  @del('/taller-clientes/{id}')
+  @response(204, {
+    description: 'TallerCliente DELETE success',
+  })
+  async deleteById(@param.path.number('id') id: number): Promise<void> {
+    await this.tallerClienteRepository.deleteById(id);
+  }
+}
+
+```
+
+### `texfi-backend\src\controllers\taller.controller.ts`
+
+```typescript
+import {Count, CountSchema, Filter, FilterExcludingWhere, repository, Where} from '@loopback/repository';
+import {post, param, get, getModelSchemaRef, patch, put, del, requestBody, response} from '@loopback/rest';
+import {Taller} from '../models';
+import {TallerRepository} from '../repositories';
+
+export class TallerController {
+  constructor(
+    @repository(TallerRepository)
+    public tallerRepository: TallerRepository,
+  ) {}
+  @post('/talleres')
+  @response(200, {
+    description: 'Taller model instance',
+    content: {'application/json': {schema: getModelSchemaRef(Taller)}},
+  })
+  async create(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Taller, {
+            title: 'NewTaller',
+            exclude: ['id'],
+          }),
+        },
+      },
+    })
+    taller: Omit<Taller, 'id'>,
+  ): Promise<Taller> {
+    return this.tallerRepository.create(taller);
+  }
+  @get('/talleres/count')
+  @response(200, {
+    description: 'Taller model count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async count(@param.where(Taller) where?: Where<Taller>): Promise<Count> {
+    return this.tallerRepository.count(where);
+  }
+  @get('/talleres')
+  @response(200, {
+    description: 'Array of Taller model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(Taller, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async find(@param.filter(Taller) filter?: Filter<Taller>): Promise<Taller[]> {
+    return this.tallerRepository.find(filter);
+  }
+  @patch('/talleres')
+  @response(200, {
+    description: 'Taller PATCH success count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async updateAll(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Taller, {partial: true}),
+        },
+      },
+    })
+    taller: Taller,
+    @param.where(Taller) where?: Where<Taller>,
+  ): Promise<Count> {
+    return this.tallerRepository.updateAll(taller, where);
+  }
+  @get('/talleres/{id}')
+  @response(200, {
+    description: 'Taller model instance',
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(Taller, {includeRelations: true}),
+      },
+    },
+  })
+  async findById(
+    @param.path.number('id') id: number,
+    @param.filter(Taller, {exclude: 'where'}) filter?: FilterExcludingWhere<Taller>,
+  ): Promise<Taller> {
+    return this.tallerRepository.findById(id, filter);
+  }
+  @patch('/talleres/{id}')
+  @response(204, {
+    description: 'Taller PATCH success',
+  })
+  async updateById(
+    @param.path.number('id') id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Taller, {partial: true}),
+        },
+      },
+    })
+    taller: Taller,
+  ): Promise<void> {
+    await this.tallerRepository.updateById(id, taller);
+  }
+  @put('/talleres/{id}')
+  @response(204, {
+    description: 'Taller PUT success',
+  })
+  async replaceById(@param.path.number('id') id: number, @requestBody() taller: Taller): Promise<void> {
+    await this.tallerRepository.replaceById(id, taller);
+  }
+  @del('/talleres/{id}')
+  @response(204, {
+    description: 'Taller DELETE success',
+  })
+  async deleteById(@param.path.number('id') id: number): Promise<void> {
+    await this.tallerRepository.deleteById(id);
+  }
+}
+
+```
+
+### `texfi-backend\src\controllers\usuario.controller.ts`
+
+```typescript
+import {Count, CountSchema, Filter, FilterExcludingWhere, repository, Where} from '@loopback/repository';
+import {post, param, get, getModelSchemaRef, patch, put, del, requestBody, response} from '@loopback/rest';
+import {Usuario} from '../models';
+import {UsuarioRepository} from '../repositories';
+
+export class UsuarioController {
+  constructor(
+    @repository(UsuarioRepository)
+    public usuarioRepository: UsuarioRepository,
+  ) {}
+  @post('/usuarios')
+  @response(200, {
+    description: 'Usuario model instance',
+    content: {'application/json': {schema: getModelSchemaRef(Usuario)}},
+  })
+  async create(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Usuario, {
+            title: 'NewUsuario',
+            exclude: ['id'],
+          }),
+        },
+      },
+    })
+    usuario: Omit<Usuario, 'id'>,
+  ): Promise<Usuario> {
+    return this.usuarioRepository.create(usuario);
+  }
+  @get('/usuarios/count')
+  @response(200, {
+    description: 'Usuario model count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async count(@param.where(Usuario) where?: Where<Usuario>): Promise<Count> {
+    return this.usuarioRepository.count(where);
+  }
+  @get('/usuarios')
+  @response(200, {
+    description: 'Array of Usuario model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(Usuario, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async find(@param.filter(Usuario) filter?: Filter<Usuario>): Promise<Usuario[]> {
+    return this.usuarioRepository.find(filter);
+  }
+  @patch('/usuarios')
+  @response(200, {
+    description: 'Usuario PATCH success count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async updateAll(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Usuario, {partial: true}),
+        },
+      },
+    })
+    usuario: Usuario,
+    @param.where(Usuario) where?: Where<Usuario>,
+  ): Promise<Count> {
+    return this.usuarioRepository.updateAll(usuario, where);
+  }
+  @get('/usuarios/{id}')
+  @response(200, {
+    description: 'Usuario model instance',
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(Usuario, {includeRelations: true}),
+      },
+    },
+  })
+  async findById(
+    @param.path.number('id') id: number,
+    @param.filter(Usuario, {exclude: 'where'}) filter?: FilterExcludingWhere<Usuario>,
+  ): Promise<Usuario> {
+    return this.usuarioRepository.findById(id, filter);
+  }
+  @patch('/usuarios/{id}')
+  @response(204, {
+    description: 'Usuario PATCH success',
+  })
+  async updateById(
+    @param.path.number('id') id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Usuario, {partial: true}),
+        },
+      },
+    })
+    usuario: Usuario,
+  ): Promise<void> {
+    await this.usuarioRepository.updateById(id, usuario);
+  }
+  @put('/usuarios/{id}')
+  @response(204, {
+    description: 'Usuario PUT success',
+  })
+  async replaceById(@param.path.number('id') id: number, @requestBody() usuario: Usuario): Promise<void> {
+    await this.usuarioRepository.replaceById(id, usuario);
+  }
+  @del('/usuarios/{id}')
+  @response(204, {
+    description: 'Usuario DELETE success',
+  })
+  async deleteById(@param.path.number('id') id: number): Promise<void> {
+    await this.usuarioRepository.deleteById(id);
+  }
+}
+
+```
+

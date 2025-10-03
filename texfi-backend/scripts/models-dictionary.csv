@@ -1,0 +1,89 @@
+Modelo;Nombre;Tipo;Destino/Detalles
+Taller;id;Propiedad;number
+Taller;pais;Propiedad;string
+Taller;nombre;Propiedad;string
+Taller;identificacion;Propiedad;string
+Taller;email;Propiedad;string
+Taller;telefono;Propiedad;string
+Taller;usuarioId;Propiedad;Number
+Taller;maquinas;Relación (hasMany);Maquina
+Taller;operarios;Relación (hasMany);Operario
+Taller;clientes;Relación (hasMany);Cliente
+Taller;producciones;Relación (hasMany);Produccion
+Taller;usuario;Relación (belongsTo);Usuario
+Maquina;id;Propiedad;number
+Maquina;nombre;Propiedad;string
+Maquina;tipo;Propiedad;string
+Maquina;activo;Propiedad;boolean
+Maquina;tallerId;Propiedad;Number
+Maquina;taller;Relación (belongsTo);Taller
+Maquina;producciones;Relación (hasMany);Produccion
+Operario;id;Propiedad;number
+Operario;nombre;Propiedad;string
+Operario;identificacion;Propiedad;string
+Operario;activo;Propiedad;boolean
+Operario;tallerId;Propiedad;Number
+Operario;taller;Relación (belongsTo);Taller
+Operario;producciones;Relación (hasMany);Produccion
+Producto;id;Propiedad;number
+Producto;referencia;Propiedad;string
+Producto;descripcion;Propiedad;string
+Producto;tiempoEstandar;Propiedad;number
+Producto;clienteId;Propiedad;Number
+Producto;cliente;Relación (belongsTo);Cliente
+Producto;operaciones;Relación (hasMany);Operacion
+Producto;producciones;Relación (hasMany);Produccion
+Operacion;id;Propiedad;number
+Operacion;nombre;Propiedad;string
+Operacion;productos;Relación (hasMany);Producto
+Cliente;id;Propiedad;number
+Cliente;pais;Propiedad;string
+Cliente;nombre;Propiedad;string
+Cliente;identificacion;Propiedad;string
+Cliente;contacto;Propiedad;string
+Cliente;email;Propiedad;string
+Cliente;telefono;Propiedad;string
+Cliente;usuarioId;Propiedad;Number
+Cliente;talleres;Relación (hasMany);Taller
+Cliente;productos;Relación (hasMany);Producto
+Cliente;usuario;Relación (belongsTo);Usuario
+Produccion;id;Propiedad;number
+Produccion;fecha;Propiedad;date
+Produccion;tiempoPlanificado;Propiedad;number
+Produccion;tiempoParo;Propiedad;number
+Produccion;programado;Propiedad;boolean
+Produccion;motivoParo;Propiedad;string
+Produccion;tallerId;Propiedad;Number
+Produccion;maquinas;Relación (hasMany);Maquina
+Produccion;operarios;Relación (hasMany);Operario
+Produccion;productos;Relación (hasMany);Producto
+Produccion;taller;Relación (belongsTo);Taller
+DetalleProduccion;id;Propiedad;number
+DetalleProduccion;cantidadProducida;Propiedad;number
+DetalleProduccion;unidadesDefectuosas;Propiedad;number
+DetalleProduccion;produccionId;Propiedad;number
+DetalleProduccion;productoId;Propiedad;number
+TallerCliente;id;Propiedad;number
+TallerCliente;tallerId;Propiedad;number
+TallerCliente;clienteId;Propiedad;number
+OperacionProducto;id;Propiedad;number
+OperacionProducto;productoId;Propiedad;number
+OperacionProducto;operacionId;Propiedad;number
+ProduccionMaquina;id;Propiedad;number
+ProduccionMaquina;produccionId;Propiedad;number
+ProduccionMaquina;maquinaId;Propiedad;number
+ProduccionOperario;id;Propiedad;number
+ProduccionOperario;produccionId;Propiedad;number
+ProduccionOperario;operarioId;Propiedad;number
+Usuario;id;Propiedad;number
+Usuario;nombre;Propiedad;string
+Usuario;password;Propiedad;string
+Usuario;rol;Propiedad;string
+Usuario;plan;Propiedad;string
+Usuario;fechaVencimientoPlan;Propiedad;date
+Usuario;caracteristicas;Propiedad;object
+Usuario;activo;Propiedad;boolean
+Usuario;fechaCreacion;Propiedad;date
+Usuario;fechaActualizacion;Propiedad;date
+Usuario;cliente;Relación (hasOne);Cliente
+Usuario;taller;Relación (hasOne);Taller

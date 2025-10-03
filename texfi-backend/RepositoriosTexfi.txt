@@ -1,0 +1,249 @@
+## File Structure
+```
+texfi/
+└── texfi-backend
+    └── src
+        └── repositories
+            ├── cliente.repository.ts
+            ├── detalle-produccion.repository.ts
+            ├── maquina.repository.ts
+            ├── operacion-producto.repository.ts
+            ├── operacion.repository.ts
+            ├── operario.repository.ts
+            ├── produccion-maquina.repository.ts
+            ├── produccion-operario.repository.ts
+            ├── produccion.repository.ts
+            ├── producto.repository.ts
+            ├── taller-cliente.repository.ts
+            ├── taller.repository.ts
+            └── usuario.repository.ts
+```
+
+### `texfi-backend\src\repositories\cliente.repository.ts`
+
+```typescript
+import {inject} from '@loopback/core';
+import {DefaultCrudRepository} from '@loopback/repository';
+import {PostgresqlDataSource} from '../datasources';
+import {Cliente, ClienteRelations} from '../models';
+
+export class ClienteRepository extends DefaultCrudRepository<Cliente, typeof Cliente.prototype.id, ClienteRelations> {
+  constructor(@inject('datasources.postgresql') dataSource: PostgresqlDataSource) {
+    super(Cliente, dataSource);
+  }
+}
+
+```
+
+### `texfi-backend\src\repositories\detalle-produccion.repository.ts`
+
+```typescript
+import {inject} from '@loopback/core';
+import {DefaultCrudRepository} from '@loopback/repository';
+import {PostgresqlDataSource} from '../datasources';
+import {DetalleProduccion, DetalleProduccionRelations} from '../models';
+
+export class DetalleProduccionRepository extends DefaultCrudRepository<
+  DetalleProduccion,
+  typeof DetalleProduccion.prototype.id,
+  DetalleProduccionRelations
+> {
+  constructor(@inject('datasources.postgresql') dataSource: PostgresqlDataSource) {
+    super(DetalleProduccion, dataSource);
+  }
+}
+
+```
+
+### `texfi-backend\src\repositories\maquina.repository.ts`
+
+```typescript
+import {inject} from '@loopback/core';
+import {DefaultCrudRepository} from '@loopback/repository';
+import {PostgresqlDataSource} from '../datasources';
+import {Maquina, MaquinaRelations} from '../models';
+
+export class MaquinaRepository extends DefaultCrudRepository<Maquina, typeof Maquina.prototype.id, MaquinaRelations> {
+  constructor(@inject('datasources.postgresql') dataSource: PostgresqlDataSource) {
+    super(Maquina, dataSource);
+  }
+}
+
+```
+
+### `texfi-backend\src\repositories\operacion-producto.repository.ts`
+
+```typescript
+import {inject} from '@loopback/core';
+import {DefaultCrudRepository} from '@loopback/repository';
+import {PostgresqlDataSource} from '../datasources';
+import {OperacionProducto, OperacionProductoRelations} from '../models';
+
+export class OperacionProductoRepository extends DefaultCrudRepository<
+  OperacionProducto,
+  typeof OperacionProducto.prototype.id,
+  OperacionProductoRelations
+> {
+  constructor(@inject('datasources.postgresql') dataSource: PostgresqlDataSource) {
+    super(OperacionProducto, dataSource);
+  }
+}
+
+```
+
+### `texfi-backend\src\repositories\operacion.repository.ts`
+
+```typescript
+import {inject} from '@loopback/core';
+import {DefaultCrudRepository} from '@loopback/repository';
+import {PostgresqlDataSource} from '../datasources';
+import {Operacion, OperacionRelations} from '../models';
+
+export class OperacionRepository extends DefaultCrudRepository<Operacion, typeof Operacion.prototype.id, OperacionRelations> {
+  constructor(@inject('datasources.postgresql') dataSource: PostgresqlDataSource) {
+    super(Operacion, dataSource);
+  }
+}
+
+```
+
+### `texfi-backend\src\repositories\operario.repository.ts`
+
+```typescript
+import {inject} from '@loopback/core';
+import {DefaultCrudRepository} from '@loopback/repository';
+import {PostgresqlDataSource} from '../datasources';
+import {Operario, OperarioRelations} from '../models';
+
+export class OperarioRepository extends DefaultCrudRepository<Operario, typeof Operario.prototype.id, OperarioRelations> {
+  constructor(@inject('datasources.postgresql') dataSource: PostgresqlDataSource) {
+    super(Operario, dataSource);
+  }
+}
+
+```
+
+### `texfi-backend\src\repositories\produccion-maquina.repository.ts`
+
+```typescript
+import {inject} from '@loopback/core';
+import {DefaultCrudRepository} from '@loopback/repository';
+import {PostgresqlDataSource} from '../datasources';
+import {ProduccionMaquina, ProduccionMaquinaRelations} from '../models';
+
+export class ProduccionMaquinaRepository extends DefaultCrudRepository<
+  ProduccionMaquina,
+  typeof ProduccionMaquina.prototype.id,
+  ProduccionMaquinaRelations
+> {
+  constructor(@inject('datasources.postgresql') dataSource: PostgresqlDataSource) {
+    super(ProduccionMaquina, dataSource);
+  }
+}
+
+```
+
+### `texfi-backend\src\repositories\produccion-operario.repository.ts`
+
+```typescript
+import {inject} from '@loopback/core';
+import {DefaultCrudRepository} from '@loopback/repository';
+import {PostgresqlDataSource} from '../datasources';
+import {ProduccionOperario, ProduccionOperarioRelations} from '../models';
+
+export class ProduccionOperarioRepository extends DefaultCrudRepository<
+  ProduccionOperario,
+  typeof ProduccionOperario.prototype.id,
+  ProduccionOperarioRelations
+> {
+  constructor(@inject('datasources.postgresql') dataSource: PostgresqlDataSource) {
+    super(ProduccionOperario, dataSource);
+  }
+}
+
+```
+
+### `texfi-backend\src\repositories\produccion.repository.ts`
+
+```typescript
+import {inject} from '@loopback/core';
+import {DefaultCrudRepository} from '@loopback/repository';
+import {PostgresqlDataSource} from '../datasources';
+import {Produccion, ProduccionRelations} from '../models';
+
+export class ProduccionRepository extends DefaultCrudRepository<Produccion, typeof Produccion.prototype.id, ProduccionRelations> {
+  constructor(@inject('datasources.postgresql') dataSource: PostgresqlDataSource) {
+    super(Produccion, dataSource);
+  }
+}
+
+```
+
+### `texfi-backend\src\repositories\producto.repository.ts`
+
+```typescript
+import {inject} from '@loopback/core';
+import {DefaultCrudRepository} from '@loopback/repository';
+import {PostgresqlDataSource} from '../datasources';
+import {Producto, ProductoRelations} from '../models';
+
+export class ProductoRepository extends DefaultCrudRepository<Producto, typeof Producto.prototype.id, ProductoRelations> {
+  constructor(@inject('datasources.postgresql') dataSource: PostgresqlDataSource) {
+    super(Producto, dataSource);
+  }
+}
+
+```
+
+### `texfi-backend\src\repositories\taller-cliente.repository.ts`
+
+```typescript
+import {inject} from '@loopback/core';
+import {DefaultCrudRepository} from '@loopback/repository';
+import {PostgresqlDataSource} from '../datasources';
+import {TallerCliente, TallerClienteRelations} from '../models';
+
+export class TallerClienteRepository extends DefaultCrudRepository<
+  TallerCliente,
+  typeof TallerCliente.prototype.id,
+  TallerClienteRelations
+> {
+  constructor(@inject('datasources.postgresql') dataSource: PostgresqlDataSource) {
+    super(TallerCliente, dataSource);
+  }
+}
+
+```
+
+### `texfi-backend\src\repositories\taller.repository.ts`
+
+```typescript
+import {inject} from '@loopback/core';
+import {DefaultCrudRepository} from '@loopback/repository';
+import {PostgresqlDataSource} from '../datasources';
+import {Taller, TallerRelations} from '../models';
+
+export class TallerRepository extends DefaultCrudRepository<Taller, typeof Taller.prototype.id, TallerRelations> {
+  constructor(@inject('datasources.postgresql') dataSource: PostgresqlDataSource) {
+    super(Taller, dataSource);
+  }
+}
+
+```
+
+### `texfi-backend\src\repositories\usuario.repository.ts`
+
+```typescript
+import {inject} from '@loopback/core';
+import {DefaultCrudRepository} from '@loopback/repository';
+import {PostgresqlDataSource} from '../datasources';
+import {Usuario, UsuarioRelations} from '../models';
+
+export class UsuarioRepository extends DefaultCrudRepository<Usuario, typeof Usuario.prototype.id, UsuarioRelations> {
+  constructor(@inject('datasources.postgresql') dataSource: PostgresqlDataSource) {
+    super(Usuario, dataSource);
+  }
+}
+
+```
+

@@ -1,0 +1,424 @@
+## File Structure
+```
+texfi/
+└── texfi-backend
+    └── src
+        └── models
+            ├── cliente.model.ts
+            ├── detalle-produccion.model.ts
+            ├── maquina.model.ts
+            ├── operacion-producto.model.ts
+            ├── operacion.model.ts
+            ├── operario.model.ts
+            ├── produccion-maquina.model.ts
+            ├── produccion-operario.model.ts
+            ├── produccion.model.ts
+            ├── producto.model.ts
+            ├── taller-cliente.model.ts
+            ├── taller.model.ts
+            └── usuario.model.ts
+```
+
+### `texfi-backend\src\models\cliente.model.ts`
+
+```typescript
+import {Entity, model, property, hasMany, belongsTo} from '@loopback/repository';
+import {Taller} from './taller.model';
+import {TallerCliente} from './taller-cliente.model';
+import {Producto} from './producto.model';
+import {Usuario} from './usuario.model';
+
+@model()
+
+export class Cliente extends Entity {
+  
+  @property({type: 'number', id: true, generated: true}) id?: number;
+  @property({type: 'string', required: true}) pais: string;
+  @property({type: 'string', required: true}) nombre: string;
+  @property({type: 'string', required: true}) identificacion: string;
+  @property({type: 'string', required: true}) contacto: string;
+  @property({type: 'string', required: true, jsonSchema: {format: 'email'}}) email: string;
+  @property({type: 'string', required: true}) telefono: string;
+    
+  @hasMany(() => Taller, {through: {model: () => TallerCliente}}) talleres: Taller[];
+  @hasMany(() => Producto) productos: Producto[];
+  @belongsTo(() => Usuario) usuarioId: number;
+  
+  constructor(data?: Partial<Cliente>) {super(data);}
+}
+
+export interface ClienteRelations {
+  // describe navigational properties here
+}
+
+export type ClienteWithRelations = Cliente & ClienteRelations;
+
+```
+
+### `texfi-backend\src\models\detalle-produccion.model.ts`
+
+```typescript
+import {Entity, model, property} from '@loopback/repository';
+
+@model()
+
+export class DetalleProduccion extends Entity {
+  
+  @property({type: 'number', id: true, generated: true}) id?: number;
+  @property({type: 'number', required: true}) cantidadProducida: number;
+  @property({type: 'number', required: true}) unidadesDefectuosas: number;
+  @property({type: 'number'}) produccionId?: number;
+  @property({type: 'number'}) productoId?: number;
+  
+  constructor(data?: Partial<DetalleProduccion>) {super(data);}
+}
+
+export interface DetalleProduccionRelations {
+  // describe navigational properties here
+}
+
+export type DetalleProduccionWithRelations = DetalleProduccion & DetalleProduccionRelations;
+
+```
+
+### `texfi-backend\src\models\maquina.model.ts`
+
+```typescript
+import {Entity, model, property, belongsTo, hasMany} from '@loopback/repository';
+import {Taller} from './taller.model';
+import {Produccion} from './produccion.model';
+import {ProduccionMaquina} from './produccion-maquina.model';
+
+@model()
+
+export class Maquina extends Entity {
+  
+  @property({type: 'number', id: true, generated: true,}) id?: number;
+  @property({type: 'string', required: true,}) nombre: string;
+  @property({type: 'string', required: true,}) tipo: string;
+  @property({type: 'boolean', default: true,}) activo?: boolean;
+  
+  @belongsTo(() => Taller) tallerId: number;
+  @hasMany(() => Produccion, {through: {model: () => ProduccionMaquina}}) producciones: Produccion[];
+  
+  constructor(data?: Partial<Maquina>) {super(data);}
+}
+
+export interface MaquinaRelations {
+  // describe navigational properties here
+}
+
+export type MaquinaWithRelations = Maquina & MaquinaRelations;
+
+```
+
+### `texfi-backend\src\models\operacion-producto.model.ts`
+
+```typescript
+import {Entity, model, property} from '@loopback/repository';
+
+@model()
+
+export class OperacionProducto extends Entity {
+ 
+  @property({type: 'number', id: true, generated: true,}) id?: number;
+  @property({type: 'number', required: true,}) productoId: number;
+  @property({type: 'number', required: true,}) operacionId: number;
+  
+  constructor(data?: Partial<OperacionProducto>) {super(data);}
+}
+
+export interface OperacionProductoRelations {
+  // describe navigational properties here
+}
+
+export type OperacionProductoWithRelations = OperacionProducto & OperacionProductoRelations;
+
+```
+
+### `texfi-backend\src\models\operacion.model.ts`
+
+```typescript
+import {Entity, model, property, hasMany} from '@loopback/repository';
+import {Producto} from './producto.model';
+import {OperacionProducto} from './operacion-producto.model';
+
+@model()
+
+export class Operacion extends Entity {
+  
+  @property({type: 'number', id: true, generated: true,}) id?: number;
+  @property({type: 'string', required: true,}) nombre: string;
+  
+  @hasMany(() => Producto, {through: {model: () => OperacionProducto}}) productos: Producto[];
+  
+  constructor(data?: Partial<Operacion>) {super(data);}
+}
+
+export interface OperacionRelations {
+  // describe navigational properties here
+}
+
+export type OperacionWithRelations = Operacion & OperacionRelations;
+
+```
+
+### `texfi-backend\src\models\operario.model.ts`
+
+```typescript
+import {Entity, model, property, belongsTo, hasMany} from '@loopback/repository';
+import {Taller} from './taller.model';
+import {Produccion} from './produccion.model';
+import {ProduccionOperario} from './produccion-operario.model';
+
+@model()
+
+export class Operario extends Entity {
+  
+  @property({type: 'number', id: true, generated: true,}) id?: number;
+  @property({type: 'string', required: true,}) nombre: string;
+  @property({type: 'string', required: true,}) identificacion: string;
+  @property({type: 'boolean', default: true,}) activo?: boolean;
+  
+  @belongsTo(() => Taller) tallerId: number;
+  @hasMany(() => Produccion, {through: {model: () => ProduccionOperario}}) producciones: Produccion[];
+  
+  constructor(data?: Partial<Operario>) {super(data);}
+}
+
+export interface OperarioRelations {
+  // describe navigational properties here
+}
+
+export type OperarioWithRelations = Operario & OperarioRelations;
+
+```
+
+### `texfi-backend\src\models\produccion-maquina.model.ts`
+
+```typescript
+import {Entity, model, property} from '@loopback/repository';
+
+@model()
+
+export class ProduccionMaquina extends Entity {
+  
+  @property({type: 'number', id: true, generated: true,}) id?: number;
+  @property({type: 'number',}) produccionId?: number;
+  @property({type: 'number',}) maquinaId?: number;
+  
+  constructor(data?: Partial<ProduccionMaquina>) {super(data);}
+}
+
+export interface ProduccionMaquinaRelations {
+  // describe navigational properties here
+}
+
+export type ProduccionMaquinaWithRelations = ProduccionMaquina & ProduccionMaquinaRelations;
+
+```
+
+### `texfi-backend\src\models\produccion-operario.model.ts`
+
+```typescript
+import {Entity, model, property} from '@loopback/repository';
+
+@model()
+
+export class ProduccionOperario extends Entity {
+  
+  @property({type: 'number', id: true, generated: true,}) id?: number;
+  @property({type: 'number',}) produccionId?: number;
+  @property({type: 'number',}) operarioId?: number;
+  
+  constructor(data?: Partial<ProduccionOperario>) {super(data);}
+}
+
+export interface ProduccionOperarioRelations {
+  // describe navigational properties here
+}
+
+export type ProduccionOperarioWithRelations = ProduccionOperario & ProduccionOperarioRelations;
+
+```
+
+### `texfi-backend\src\models\produccion.model.ts`
+
+```typescript
+import {Entity, model, property, hasMany, belongsTo} from '@loopback/repository';
+import {Maquina} from './maquina.model';
+import {Operario} from './operario.model';
+import {Producto} from './producto.model';
+import {DetalleProduccion} from './detalle-produccion.model';
+import {Taller} from './taller.model';
+import {ProduccionMaquina} from './produccion-maquina.model';
+import {ProduccionOperario} from './produccion-operario.model';
+
+@model()
+
+export class Produccion extends Entity {
+  
+  @property({type: 'number', id: true, generated: true,}) id?: number;
+  @property({type: 'date', default: '$now'}) fecha: Date; //Cambio de string por Date-required por default - true por $now
+  @property({type: 'number', default: 0, required: true,}) tiempoPlanificado: number; //Total minutos planeados en el día. Solicitar en horas en el frontend y convertir a minutos al guardar en la base de datos
+  @property({type: 'number', default: 0, required: true,}) tiempoParo: number;
+  @property({type: 'boolean', default: false,}) programado: boolean; // true = sí (programado), false = no (no programado)
+  @property({type: 'string',}) motivoParo?: string;
+  
+//Calculo de OEE: Disponibilidad*Rendimiento*Calidad
+//Disponibilidad: (tiempoPlanificado-tiempoParo)/tiempoPlanificado
+//tiempoPlanificado-tiempoParo = Tiempo Operativo
+//Rendimiento: (Sumatoria de unidades producidas por producto)*(Tiempo estandar ponderado) / tiempo operativo
+//Tiempo estandar ponderado: ((UnidadesProducto1*TiempoEstandarProducto1)+...+(UnidadesProductoN*TiempoEstandarProductoN))/(Sumatoria de unidades producidas por producto)
+//Calidad: (UnidadesProducidas-UnidadesDefectuosas)/UnidadesProducidas
+
+  @hasMany(() => Maquina, {through: {model: () => ProduccionMaquina}}) maquinas: Maquina[];
+  @hasMany(() => Operario, {through: {model: () => ProduccionOperario}}) operarios: Operario[];
+  @hasMany(() => Producto, {through: {model: () => DetalleProduccion}}) productos: Producto[];
+  @belongsTo(() => Taller) tallerId: number;
+  
+  constructor(data?: Partial<Produccion>) {super(data);
+  }
+}
+
+export interface ProduccionRelations {
+  // describe navigational properties here
+}
+
+export type ProduccionWithRelations = Produccion & ProduccionRelations;
+
+```
+
+### `texfi-backend\src\models\producto.model.ts`
+
+```typescript
+import {Entity, model, property, belongsTo, hasMany} from '@loopback/repository';
+import {Cliente} from './cliente.model';
+import {Operacion} from './operacion.model';
+import {OperacionProducto} from './operacion-producto.model';
+import {Produccion} from './produccion.model';
+import {DetalleProduccion} from './detalle-produccion.model';
+
+@model()
+
+export class Producto extends Entity {
+  
+  @property({type: 'number', id: true, generated: true,}) id?: number;
+  @property({type: 'string', required: true,}) referencia: string;
+  @property({type: 'string',}) descripcion?: string;
+  @property({type: 'number',}) tiempoEstandar: number;
+  
+  @belongsTo(() => Cliente) clienteId: number;
+  @hasMany(() => Operacion, {through: {model: () => OperacionProducto}}) operaciones: Operacion[];
+  @hasMany(() => Produccion, {through: {model: () => DetalleProduccion}}) producciones: Produccion[];
+  
+  constructor(data?: Partial<Producto>) {super(data);}
+}
+
+export interface ProductoRelations {
+  // describe navigational properties here
+}
+
+export type ProductoWithRelations = Producto & ProductoRelations;
+
+```
+
+### `texfi-backend\src\models\taller-cliente.model.ts`
+
+```typescript
+import {Entity, model, property} from '@loopback/repository';
+
+@model()
+
+export class TallerCliente extends Entity {
+  
+  @property({type: 'number', id: true, generated: true,}) id?: number;
+  @property({type: 'number',}) tallerId?: number;
+  @property({type: 'number',}) clienteId?: number;
+  
+  constructor(data?: Partial<TallerCliente>) {super(data);}
+}
+
+export interface TallerClienteRelations {
+  // describe navigational properties here
+}
+
+export type TallerClienteWithRelations = TallerCliente & TallerClienteRelations;
+
+```
+
+### `texfi-backend\src\models\taller.model.ts`
+
+```typescript
+import {Entity, model, property, hasMany, belongsTo} from '@loopback/repository';
+import {Maquina} from './maquina.model';
+import {Operario} from './operario.model';
+import {Cliente} from './cliente.model';
+import {TallerCliente} from './taller-cliente.model';
+import {Produccion} from './produccion.model';
+import {Usuario} from './usuario.model';
+
+@model()
+
+export class Taller extends Entity {
+  
+  @property({type: 'number', id: true, generated: true}) id?: number;
+  @property({type: 'string', required: true}) pais: string;
+  @property({type: 'string', required: true}) nombre: string;
+  @property({type: 'string', required: true}) identificacion: string;
+  @property({type: 'string', required: true, jsonSchema: {format: 'email'}}) email: string;
+  @property({type: 'string', required: true}) telefono: string;
+  
+  @hasMany(() => Maquina) maquinas: Maquina[];
+  @hasMany(() => Operario) operarios: Operario[];
+  @hasMany(() => Cliente, {through: {model: () => TallerCliente}}) clientes: Cliente[];
+  @hasMany(() => Produccion) producciones: Produccion[];
+  @belongsTo(() => Usuario) usuarioId: number; 
+  
+  constructor(data?: Partial<Taller>) {super(data);}
+}
+
+export interface TallerRelations {
+  // describe navigational properties here
+}
+
+export type TallerWithRelations = Taller & TallerRelations;
+
+```
+
+### `texfi-backend\src\models\usuario.model.ts`
+
+```typescript
+import {Entity, model, property, hasOne} from '@loopback/repository';
+import {Cliente} from './cliente.model';
+import {Taller} from './taller.model';
+
+@model()
+
+export class Usuario extends Entity {
+  
+  @property({type: 'number', id: true, generated: true}) id?: number;
+  @property({type: 'string', required: true}) nombre: string;
+  @property({type: 'string', required: true, jsonSchema: {minLength: 6}}) password: string;
+  @property({type: 'string', required: true, jsonSchema: {enum: ['taller', 'cliente', 'admin']}}) rol: string;
+  @property({type: 'string', required: true, jsonSchema: {enum: ['gratuito', 'premium', 'empresa']}}) plan: string;
+  @property({type: 'date'}) fechaVencimientoPlan?: Date; //Cambio de string por Date
+  @property({type: 'object'}) caracteristicas?: object;
+  @property({type: 'boolean', required: true}) activo: boolean;
+  @property({type: 'date', default: '$now'}) fechaCreacion?: Date; //Cambio de string por Date-required por default - true por $now
+  @property({type: 'date', default: '$now'}) fechaActualizacion?: Date; //Cambio de string por Date-required por default - true por $now
+    
+  @hasOne(() => Cliente) cliente: Cliente;
+  @hasOne(() => Taller) taller: Taller;
+  
+  constructor(data?: Partial<Usuario>) {super(data);}
+}
+
+export interface UsuarioRelations {
+  // describe navigational properties here
+}
+
+export type UsuarioWithRelations = Usuario & UsuarioRelations;
+
+```
+
