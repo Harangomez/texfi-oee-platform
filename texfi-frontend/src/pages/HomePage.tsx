@@ -30,19 +30,19 @@ export const HomePage: React.FC = () => {
   const plans = [
     {
       name: 'Gratuito',
-      price: '$0',
+      //price: '$0',
       description: 'Para pequeños talleres',
       features: ['Hasta 3 máquinas', '1 usuario', 'Dashboard básico', 'Soporte por email']
     },
     {
       name: 'Premium',
-      price: '$49',
+      //price: '$49',
       description: 'Para talleres en crecimiento',
       features: ['Hasta 10 máquinas', '3 usuarios', 'Dashboard avanzado', 'Soporte prioritario', 'Informes PDF']
     },
     {
       name: 'Empresa',
-      price: '$99',
+      //price: '$99',
       description: 'Para múltiples talleres',
       features: ['Máquinas ilimitadas', 'Usuarios ilimitados', 'Dashboard completo', 'Soporte 24/7', 'API acceso']
     }
