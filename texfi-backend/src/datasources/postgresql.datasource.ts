@@ -5,11 +5,6 @@ const config = {
   name: "postgresql",
   connector: "postgresql",
   url: "${DATABASE_URL}",
-  host: "${DB_HOST}",
-  port: "${DB_PORT}",
-  user: "${DB_USER}",
-  password: "${DB_PASSWORD}",
-  database: "${DB_DATABASE}"
 };
 
 // Observe application's life cycle to disconnect the datasource when
