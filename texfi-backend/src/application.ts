@@ -8,8 +8,20 @@ import path from 'path';
 import {MySequence} from './sequence';
 import {AuthenticationComponent, registerAuthenticationStrategy} from '@loopback/authentication';
 import {JWTAuthenticationComponent, SECURITY_SCHEME_SPEC} from '@loopback/authentication-jwt';
+import {PingController} from './controllers/ping.controller';
 
 export {ApplicationConfig};
+
+export class TexfiApplication extends BootMixin(
+  ServiceMixin(RepositoryMixin(RestApplication)),
+) {
+  constructor(options: ApplicationConfig = {}) {
+    super(options);
+
+    // Agrega esta línea
+    this.controller(PingController);
+  }
+}
 
 export class TexfiBackendApplication extends BootMixin(ServiceMixin(RepositoryMixin(RestApplication))) {
   constructor(options: ApplicationConfig = {}) {
