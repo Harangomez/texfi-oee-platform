@@ -14,15 +14,15 @@ export const RegisterPage: React.FC = () => {
   const [step, setStep] = useState<FormStep>('rol');
   const [selectedRol, setSelectedRol] = useState<'taller' | 'cliente' | null>(null);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<RegisterData>();
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterData>();
 
   const onSubmit = async (data: RegisterData) => {
     try {
-      console.log('📝 Datos del formulario COMPLETOS:', JSON.stringify(data, null, 2));
       await registerUser(data);
       navigate('/dashboard');
     } catch (error) {
       console.error('Error en registro:', error);
+      // Aquí podrías mostrar un mensaje de error al usuario
       alert('Error en el registro. Por favor intenta nuevamente.');
     }
   };
@@ -30,50 +30,6 @@ export const RegisterPage: React.FC = () => {
   const handleRolSelection = (rol: 'taller' | 'cliente') => {
     setSelectedRol(rol);
     setStep('usuario');
-    // 🚨 SOLO ESTE CAMBIO: Limpiar datos residuales
-    reset({
-      usuario: { rol, plan: 'gratuito' },
-      taller: undefined,
-      cliente: undefined
-    });
-  };
-
-  // 🚨 SOLO ESTE CAMBIO: Resetear al cambiar a step del taller/cliente
-  const handleAdvanceToTallerOrCliente = () => {
-    if (selectedRol === 'taller') {
-      setStep('taller');
-      reset(prevData => ({
-        ...prevData,
-        taller: {
-          nombre: '',
-          email: '',
-          pais: '',
-          identificacion: '',
-          telefono: ''
-        }
-      }));
-    } else if (selectedRol === 'cliente') {
-      setStep('cliente');
-      reset(prevData => ({
-        ...prevData,
-        cliente: {
-          nombre: '',
-          email: '',
-          pais: '',
-          identificacion: '',
-          contacto: '',
-          telefono: ''
-        }
-      }));
-    }
-  };
-
-  const handleBack = () => {
-    if (step === 'usuario') {
-      setStep('rol');
-    } else if (step === 'taller' || step === 'cliente') {
-      setStep('usuario');
-    }
   };
 
   const renderRolStep = () => (
@@ -135,13 +91,19 @@ export const RegisterPage: React.FC = () => {
         <Button
           type="button"
           variant="outline"
-          onClick={handleBack}
+          onClick={() => setStep('rol')}
         >
           Atrás
         </Button>
         <Button
           type="button"
-          onClick={handleAdvanceToTallerOrCliente}
+          onClick={() => {
+            if (selectedRol === 'taller') {
+              setStep('taller');
+            } else if (selectedRol === 'cliente') {
+              setStep('cliente');
+            }
+          }}
         >
           Continuar
         </Button>
@@ -149,7 +111,6 @@ export const RegisterPage: React.FC = () => {
     </div>
   );
 
-  // ... (MANTENER renderTallerStep y renderClienteStep SIN CAMBIOS)
   const renderTallerStep = () => (
     <div className="space-y-4">
       <h3 className="text-lg font-medium text-gray-900">Información del Taller</h3>
@@ -195,7 +156,7 @@ export const RegisterPage: React.FC = () => {
         <Button
           type="button"
           variant="outline"
-          onClick={handleBack}
+          onClick={() => setStep('usuario')}
         >
           Atrás
         </Button>
@@ -260,7 +221,7 @@ export const RegisterPage: React.FC = () => {
         <Button
           type="button"
           variant="outline"
-          onClick={handleBack}
+          onClick={() => setStep('usuario')}
         >
           Atrás
         </Button>
@@ -274,7 +235,6 @@ export const RegisterPage: React.FC = () => {
     </div>
   );
 
-  // ... (MANTENER el resto del código sin cambios)
   const renderCurrentStep = () => {
     switch (step) {
       case 'rol':

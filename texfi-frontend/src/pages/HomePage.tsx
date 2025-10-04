@@ -122,7 +122,7 @@ export const HomePage: React.FC = () => {
             {plans.map((plan, index) => (
               <div key={index} className="border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                <div className="text-3xl font-bold text-primary-600 mb-4">{plan.price}<span className="text-sm font-normal text-gray-500">/mes</span></div>
+                {/*<div className="text-3xl font-bold text-primary-600 mb-4">{plan.price}<span className="text-sm font-normal text-gray-500">/mes</span></div>*/}
                 <p className="text-gray-600 mb-6">{plan.description}</p>
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((feature, featureIndex) => (
