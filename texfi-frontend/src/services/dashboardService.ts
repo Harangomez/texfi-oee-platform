@@ -1,5 +1,5 @@
-// services/dashboardService.ts - VERSIÓN CORREGIDA
-import { api } from './api';
+// services/dashboardService.ts - VERSIÓN DEFINITIVA CORREGIDA
+import { api } from '../services/api';
 import type { Produccion, DetalleProduccion, Producto } from '../types';
 
 // Nuevo tipo de periodo
@@ -17,7 +17,7 @@ export interface OeeData {
   unidadesDefectuosas: number;
   unidadesAprobadas: number;
   fechaCalculo?: string;
-  periodoCalculo?: string; // NUEVO: Para indicar el tipo de cálculo
+  periodoCalculo?: string;
 }
 
 export interface TrendData {
@@ -327,8 +327,13 @@ export const dashboardService = {
   }): Promise<OeeData> {
     try {
       const params: ApiFilters = {};
+      
+      // 🚨 CORRECCIÓN CRÍTICA: Asegurar que tallerId siempre se pase
       if (filters.tallerId) {
         params.tallerId = filters.tallerId;
+      } else {
+        console.error('❌ ERROR: No se proporcionó tallerId en getOeeData');
+        throw new Error('Se requiere tallerId para calcular OEE');
       }
       
       const fechaInicio = getFechaInicioPeriodo(filters.periodo);
@@ -343,27 +348,37 @@ export const dashboardService = {
 
       console.log('🔴🔴🔴 getOeeData - PARÁMETROS:', JSON.stringify(params, null, 2));
       console.log('🔴🔴🔴 getOeeData - FILTROS:', filters);
-      console.log('🔴🔴🔴 getOeeData - PERIODO:', filters.periodo);
 
+      // 🚨 CORRECCIÓN: Filtrar TODOS los datos por taller
       const [produccionesResponse, detallesResponse, productosResponse] = await Promise.all([
         api.get('/producciones', { params }),
         api.get('/detalles-produccion', { params }),
-        api.get('/productos', { params })
+        api.get('/productos', { params: { tallerId: filters.tallerId } })
       ]);
       
-      console.log('🔴🔴🔴 getOeeData - RESPUESTA:', {
+      console.log('🔴🔴🔴 getOeeData - RESULTADOS FILTRADOS:', {
         produccionesCount: produccionesResponse.data.length,
-        periodo: filters.periodo,
-        rangoFechas: `${fechaInicio} a ${fechaFin}`
+        detallesCount: detallesResponse.data.length,
+        productosCount: productosResponse.data.length,
+        tallerId: filters.tallerId
       });
 
       const producciones = produccionesResponse.data;
       const detalles = detallesResponse.data;
       const productos = productosResponse.data;
 
-      // 🚨 CORRECCIÓN PRINCIPAL: Lógica diferente según el período
-      if (producciones.length === 0) {
-        console.log('📭 No hay producciones en el período seleccionado');
+      // 🚨 VERIFICACIÓN ADICIONAL: Filtrar producciones manualmente por si el backend no aplica el filtro
+      const produccionesFiltradas = producciones.filter((p: Produccion) => 
+        p.tallerId === filters.tallerId
+      );
+
+      console.log('🔍 Producciones después de filtro manual:', {
+        antes: producciones.length,
+        despues: produccionesFiltradas.length
+      });
+
+      if (produccionesFiltradas.length === 0) {
+        console.log('📭 No hay producciones del taller en el período seleccionado');
         return calcularOEE([], [], [], undefined, filters.periodo);
       }
 
@@ -371,15 +386,11 @@ export const dashboardService = {
       if (filters.periodo === 'ultimo-dia') {
         console.log('📅 Modo: Último día - calculando solo el día más reciente');
         
-        // Ordenar producciones por fecha (más reciente primero)
-        const produccionesOrdenadas = [...producciones].sort((a, b) => 
+        const produccionesOrdenadas = [...produccionesFiltradas].sort((a, b) => 
           new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
         );
         
-        // Obtener la fecha más reciente
         const fechaMasReciente = produccionesOrdenadas[0].fecha.split('T')[0];
-        
-        // Filtrar producciones del día más reciente
         const produccionesDelDia = produccionesOrdenadas.filter(p => 
           p.fecha.startsWith(fechaMasReciente)
         );
@@ -391,12 +402,10 @@ export const dashboardService = {
         
         return calcularOEE(produccionesDelDia, detalles, productos, fechaMasReciente, 'ultimo-dia');
       } 
-      // PARA OTROS PERÍODOS (semana, mes, año): Calcular AGRUPADO de todo el período
+      // PARA OTROS PERÍODOS: Calcular AGRUPADO de todo el período
       else {
         console.log('📊 Modo: Período extendido - calculando AGREGADO de todo el período');
-        console.log('📈 Producciones en el período:', producciones.length);
-        
-        return calcularOEE(producciones, detalles, productos, undefined, filters.periodo);
+        return calcularOEE(produccionesFiltradas, detalles, productos, undefined, filters.periodo);
       }
 
     } catch (error) {
@@ -412,8 +421,13 @@ export const dashboardService = {
   }): Promise<TrendData[]> {
     try {
       const params: ApiFilters = {};
+      
+      // 🚨 CORRECCIÓN CRÍTICA: Asegurar que tallerId siempre se pase
       if (filters.tallerId) {
         params.tallerId = filters.tallerId;
+      } else {
+        console.error('❌ ERROR: No se proporcionó tallerId en getOeeTrend');
+        throw new Error('Se requiere tallerId para calcular tendencia OEE');
       }
       
       const fechaInicio = getFechaInicioTrend(filters.periodo, filters.limite);
@@ -422,23 +436,31 @@ export const dashboardService = {
       }
 
       console.log('🔵🔵🔵 getOeeTrend - PARÁMETROS:', JSON.stringify(params, null, 2));
-      console.log('🔵🔵🔵 getOeeTrend - FILTROS:', filters);
 
+      // 🚨 CORRECCIÓN: Filtrar TODOS los datos por taller
       const [produccionesResponse, detallesResponse, productosResponse] = await Promise.all([
         api.get('/producciones', { params }),
         api.get('/detalles-produccion', { params }),
-        api.get('/productos', { params })
+        api.get('/productos', { params: { tallerId: filters.tallerId } })
       ]);
       
-      console.log('🔵🔵🔵 getOeeTrend - RESPUESTA:', {
-        produccionesCount: produccionesResponse.data.length
+      console.log('🔵🔵🔵 getOeeTrend - RESULTADOS FILTRADOS:', {
+        produccionesCount: produccionesResponse.data.length,
+        detallesCount: detallesResponse.data.length,
+        productosCount: productosResponse.data.length,
+        tallerId: filters.tallerId
       });
-      
+
       const producciones = produccionesResponse.data;
       const detalles = detallesResponse.data;
       const productos = productosResponse.data;
 
-      const grupos = agruparPorPeriodo(producciones, filters.periodo || 'ultimo-dia');
+      // 🚨 VERIFICACIÓN ADICIONAL: Filtrar producciones manualmente
+      const produccionesFiltradas = producciones.filter((p: Produccion) => 
+        p.tallerId === filters.tallerId
+      );
+
+      const grupos = agruparPorPeriodo(produccionesFiltradas, filters.periodo || 'ultimo-dia');
       
       const trendData: TrendData[] = Object.entries(grupos)
         .slice(-(filters.limite || 12))
@@ -466,7 +488,6 @@ export const dashboardService = {
     }
   },
 
-  // ... (MANTENER getTimeTrend y getProductionTrend SIN CAMBIOS)
   async getTimeTrend(filters: {
     tallerId?: number;
     periodo?: Periodo;
@@ -474,8 +495,13 @@ export const dashboardService = {
   }): Promise<TimeTrendData[]> {
     try {
       const params: ApiFilters = {};
+      
+      // 🚨 CORRECCIÓN: Asegurar que tallerId siempre se pase
       if (filters.tallerId) {
         params.tallerId = filters.tallerId;
+      } else {
+        console.error('❌ ERROR: No se proporcionó tallerId en getTimeTrend');
+        throw new Error('Se requiere tallerId para calcular tendencia de tiempos');
       }
       
       const fechaInicio = getFechaInicioTrend(filters.periodo, filters.limite);
@@ -483,11 +509,17 @@ export const dashboardService = {
         params['fecha[gte]'] = fechaInicio;
       }
 
-      console.log('⏰ Obteniendo tendencia de tiempos para periodo:', filters.periodo);
+      console.log('⏰ Obteniendo tendencia de tiempos para taller:', filters.tallerId);
 
       const produccionesResponse = await api.get('/producciones', { params });
       const producciones = produccionesResponse.data;
-      const grupos = agruparPorPeriodo(producciones, filters.periodo || 'ultimo-dia');
+
+      // 🚨 VERIFICACIÓN ADICIONAL: Filtrar producciones manualmente
+      const produccionesFiltradas = producciones.filter((p: Produccion) => 
+        p.tallerId === filters.tallerId
+      );
+
+      const grupos = agruparPorPeriodo(produccionesFiltradas, filters.periodo || 'ultimo-dia');
       
       const timeTrendData: TimeTrendData[] = Object.entries(grupos)
         .slice(-(filters.limite || 12))
@@ -518,8 +550,13 @@ export const dashboardService = {
   }): Promise<ProductionTrendData[]> {
     try {
       const params: ApiFilters = {};
+      
+      // 🚨 CORRECCIÓN: Asegurar que tallerId siempre se pase
       if (filters.tallerId) {
         params.tallerId = filters.tallerId;
+      } else {
+        console.error('❌ ERROR: No se proporcionó tallerId en getProductionTrend');
+        throw new Error('Se requiere tallerId para calcular tendencia de producción');
       }
       
       const fechaInicio = getFechaInicioTrend(filters.periodo, filters.limite);
@@ -527,7 +564,7 @@ export const dashboardService = {
         params['fecha[gte]'] = fechaInicio;
       }
 
-      console.log('📦 Obteniendo tendencia de producción para periodo:', filters.periodo);
+      console.log('📦 Obteniendo tendencia de producción para taller:', filters.tallerId);
 
       const [produccionesResponse, detallesResponse] = await Promise.all([
         api.get('/producciones', { params }),
@@ -536,7 +573,13 @@ export const dashboardService = {
       
       const producciones = produccionesResponse.data;
       const detalles = detallesResponse.data;
-      const grupos = agruparPorPeriodo(producciones, filters.periodo || 'ultimo-dia');
+
+      // 🚨 VERIFICACIÓN ADICIONAL: Filtrar producciones manualmente
+      const produccionesFiltradas = producciones.filter((p: Produccion) => 
+        p.tallerId === filters.tallerId
+      );
+
+      const grupos = agruparPorPeriodo(produccionesFiltradas, filters.periodo || 'ultimo-dia');
       
       const productionTrendData: ProductionTrendData[] = Object.entries(grupos)
         .slice(-(filters.limite || 12))

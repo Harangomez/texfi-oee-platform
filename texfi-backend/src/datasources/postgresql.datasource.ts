@@ -4,7 +4,16 @@ import {juggler} from '@loopback/repository';
 const config = {
   name: "postgresql",
   connector: "postgresql",
-  url: process.env.DATABASE_URL, // ✅ CAMBIA ESTA LÍNEA
+  url: process.env.DATABASE_URL, // ✅ Comentar esta línea para pruebas locales 
+
+  /*//Comentar las siguientes líneas para actualizar el github que está conectado al despliegue
+  url: '',
+  host: 'localhost',
+  port: 5432,
+  user: 'postgres',
+  password: 'Jolukateo1511',
+  database: 'texfi_db',
+  // Comentario final*/
 };
 
 @lifeCycleObserver('datasource')

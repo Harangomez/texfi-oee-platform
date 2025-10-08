@@ -2,8 +2,9 @@ import { api } from './api';
 import type { Operacion, Produccion, Producto, ProductoWithRelations } from '../types';
 
 export const productoService = {
-  async getAll(): Promise<ProductoWithRelations[]> {
-    const response = await api.get('/productos');
+  async getAll(tallerId?: number): Promise<ProductoWithRelations[]> {
+    const params = tallerId ? { tallerId } : {};
+    const response = await api.get('/productos', { params });
     return response.data;
   },
 
@@ -39,7 +40,12 @@ export const productoService = {
   },
 
   async removeOperacion(productoId: number, operacionId: number): Promise<void> {
-    // Necesitaríamos un endpoint específico para esto
     await api.delete(`/productos/${productoId}/operaciones/${operacionId}`);
+  },
+
+  // NUEVO: Obtener productos por taller específico
+  async getByTaller(tallerId: number): Promise<ProductoWithRelations[]> {
+    const response = await api.get(`/productos/por-taller/${tallerId}`);
+    return response.data;
   }
 };
