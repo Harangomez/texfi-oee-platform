@@ -10,7 +10,7 @@ import type { Producto, Cliente, Operacion } from '../../types';
 import { Plus, Edit2 } from 'lucide-react';
 
 export const ProductosTab: React.FC = () => {
-  const { cliente, user, taller } = useAuth(); // 🚨 AGREGAR taller
+  const { cliente, user, taller } = useAuth();
   const [productos, setProductos] = useState<Producto[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [operaciones, setOperaciones] = useState<Operacion[]>([]);
@@ -22,7 +22,6 @@ export const ProductosTab: React.FC = () => {
 
   const cargarDatos = useCallback(async () => {
     try {
-      // 🚨 CORRECCIÓN: Cargar clientes del taller si es taller
       let clientesData: Cliente[] = [];
       let productosData: Producto[] = [];
 
@@ -35,14 +34,27 @@ export const ProductosTab: React.FC = () => {
         productosData = productosData.filter(producto => producto.clienteId === cliente.id);
       } else if (user?.rol === 'taller' && taller) {
         // 🚨 CORRECCIÓN: Taller ve solo productos de sus clientes
-        clientesData = await clienteService.getByTaller(taller?.id || 0);
-        
-        // Obtener todos los productos y filtrar por clientes del taller
-        productosData = await productoService.getAll();
-        const clientesIds = clientesData.map(c => c.id!);
-        productosData = productosData.filter(producto => 
-          clientesIds.includes(producto.clienteId || 0)
-        );
+        try {
+          // Obtener clientes del taller
+          clientesData = await clienteService.getByTaller(taller.id!);
+          console.log('📋 Clientes del taller:', clientesData.length);
+          
+          // Obtener todos los productos y filtrar por clientes del taller
+          productosData = await productoService.getAll();
+          console.log('📦 Todos los productos:', productosData.length);
+          
+          const clientesIds = clientesData.map(c => c.id!);
+          productosData = productosData.filter(producto => 
+            clientesIds.includes(producto.clienteId!)
+          );
+          console.log('✅ Productos filtrados del taller:', productosData.length);
+          
+        } catch (error) {
+          console.error('❌ Error cargando datos del taller:', error);
+          // Fallback: cargar todos los clientes si falla el endpoint específico
+          clientesData = await clienteService.getAll();
+          productosData = await productoService.getAll();
+        }
       } else {
         // Usuario admin o sin rol específico ve todo
         [productosData, clientesData] = await Promise.all([
@@ -56,10 +68,18 @@ export const ProductosTab: React.FC = () => {
       setProductos(productosData);
       setClientes(clientesData);
       setOperaciones(operacionesData);
+
+      console.log('📊 Datos cargados:', {
+        productos: productosData.length,
+        clientes: clientesData.length,
+        operaciones: operacionesData.length,
+        rol: user?.rol
+      });
+
     } catch (error) {
       console.error('Error cargando datos:', error);
     }
-  }, [user, cliente, taller]); // 🚨 AGREGAR taller a las dependencias
+  }, [user, cliente, taller]);
 
   useEffect(() => {
     cargarDatos();
@@ -230,7 +250,9 @@ export const ProductosTab: React.FC = () => {
                   Cliente
                 </label>
                 <select
-                  {...register('clienteId', { required: 'El cliente es requerido' })}
+                  {...register('clienteId', { 
+                    required: user?.rol === 'taller' ? 'El cliente es requerido' : false 
+                  })}
                   className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 >
                   <option value="">Seleccionar cliente</option>
@@ -246,6 +268,11 @@ export const ProductosTab: React.FC = () => {
                 {user?.rol === 'taller' && clientes.length === 0 && (
                   <p className="text-sm text-yellow-600 mt-1">
                     No tienes clientes asignados. Agrega clientes primero.
+                  </p>
+                )}
+                {user?.rol === 'taller' && clientes.length > 0 && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    {clientes.length} cliente(s) disponible(s)
                   </p>
                 )}
               </div>
@@ -315,6 +342,11 @@ export const ProductosTab: React.FC = () => {
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">
             Lista de Productos {user?.rol === 'taller' && '(de mis clientes)'}
+            {user?.rol === 'taller' && (
+              <span className="text-sm font-normal text-gray-500 ml-2">
+                {productos.length} producto(s)
+              </span>
+            )}
           </h3>
         </div>
         
