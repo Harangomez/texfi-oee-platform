@@ -1,9 +1,14 @@
 import { api } from './api';
 import type { Operacion, Produccion, Producto, ProductoWithRelations } from '../types';
 
+interface ProductosParams {
+  filter: string;
+  tallerId?: number;
+}
+
 export const productoService = {
   async getAll(tallerId?: number): Promise<ProductoWithRelations[]> {
-    const params: any = {
+    const params: ProductosParams = {
       filter: JSON.stringify({
         include: ['cliente']
       })
