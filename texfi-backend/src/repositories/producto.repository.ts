@@ -1,4 +1,4 @@
-import {inject} from '@loopback/core';
+/*import {inject} from '@loopback/core';
 import {DefaultCrudRepository} from '@loopback/repository';
 import {PostgresqlDataSource} from '../datasources';
 import {Producto, ProductoRelations} from '../models';
@@ -7,11 +7,11 @@ export class ProductoRepository extends DefaultCrudRepository<Producto, typeof P
   constructor(@inject('datasources.postgresql') dataSource: PostgresqlDataSource) {
     super(Producto, dataSource);
   }
-}
+}*/
 
 //Si la modificacion no funciona reactivar este codigo y desactivar el siguiente
 
-/*import {inject, Getter} from '@loopback/core';
+import {inject, Getter} from '@loopback/core';
 import {DefaultCrudRepository, repository, BelongsToAccessor} from '@loopback/repository';
 import {PostgresqlDataSource} from '../datasources';
 import {Producto, ProductoRelations, Cliente} from '../models';
@@ -29,4 +29,6 @@ export class ProductoRepository extends DefaultCrudRepository<Producto, typeof P
     this.cliente = this.createBelongsToAccessorFor('cliente', clienteRepositoryGetter);
     this.registerInclusionResolver('cliente', this.cliente.inclusionResolver);
   }
-}*/ //Solución tentativa para llamar a los clientes por nombre en el listado de productos
+}
+
+//Solución tentativa para llamar a los clientes por nombre en el listado de productos
