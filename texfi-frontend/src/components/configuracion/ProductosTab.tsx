@@ -20,25 +20,25 @@ export const ProductosTab: React.FC = () => {
   
   const { register, handleSubmit, reset, formState: { errors } } = useForm<Omit<Producto, 'id'>>();
 
-  // ✅ CARGAR PRODUCTOS (filtrado manual por tallerId)
-  const cargarProductos = useCallback(async () => {
+const cargarProductos = useCallback(async () => {
   if (!taller) return;
   
   try {
-    const data = await productoService.getAll();
+    const [productosData, clientesData] = await Promise.all([
+      productoService.getAll(),
+      clienteService.getAll()
+    ]);
     
-    // ✅ DIAGNÓSTICO: Ver qué trae realmente la API
-    console.log('📦 Productos CRUDOS de la API:', data);
-    console.log('🔍 Primer producto ejemplo:', data[0]);
-    console.log('👥 Cliente del primer producto:', data[0]?.cliente);
+    // ✅ ENRIQUECER DATOS: Agregar cliente a cada producto
+    const productosEnriquecidos = productosData
+      .filter(producto => producto.tallerId === taller.id)
+      .map(producto => ({
+        ...producto,
+        cliente: clientesData.find(cliente => cliente.id === producto.clienteId)
+      }));
     
-    const productosDelTaller = data.filter(producto => producto.tallerId === taller.id);
-    
-    // ✅ DIAGNÓSTICO: Ver qué queda después del filtro
-    console.log('✅ Productos después del filtro:', productosDelTaller);
-    console.log('👥 Cliente del primer producto filtrado:', productosDelTaller[0]?.cliente);
-    
-    setProductos(productosDelTaller);
+    console.log('✅ Productos enriquecidos:', productosEnriquecidos);
+    setProductos(productosEnriquecidos);
   } catch (error) {
     console.error('Error cargando productos:', error);
   }
