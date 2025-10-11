@@ -22,17 +22,27 @@ export const ProductosTab: React.FC = () => {
 
   // ✅ CARGAR PRODUCTOS (filtrado manual por tallerId)
   const cargarProductos = useCallback(async () => {
-    if (!taller) return;
+  if (!taller) return;
+  
+  try {
+    const data = await productoService.getAll();
     
-    try {
-      const data = await productoService.getAll();
-      // Filtrar productos del taller actual
-      const productosDelTaller = data.filter(producto => producto.tallerId === taller.id);
-      setProductos(productosDelTaller);
-    } catch (error) {
-      console.error('Error cargando productos:', error);
-    }
-  }, [taller]);
+    // ✅ DIAGNÓSTICO: Ver qué trae realmente la API
+    console.log('📦 Productos CRUDOS de la API:', data);
+    console.log('🔍 Primer producto ejemplo:', data[0]);
+    console.log('👥 Cliente del primer producto:', data[0]?.cliente);
+    
+    const productosDelTaller = data.filter(producto => producto.tallerId === taller.id);
+    
+    // ✅ DIAGNÓSTICO: Ver qué queda después del filtro
+    console.log('✅ Productos después del filtro:', productosDelTaller);
+    console.log('👥 Cliente del primer producto filtrado:', productosDelTaller[0]?.cliente);
+    
+    setProductos(productosDelTaller);
+  } catch (error) {
+    console.error('Error cargando productos:', error);
+  }
+}, [taller]);
 
   // ✅ CARGAR CLIENTES Y OPERACIONES
   const cargarClientesYOperaciones = useCallback(async () => {
@@ -55,6 +65,8 @@ export const ProductosTab: React.FC = () => {
     }
     cargarClientesYOperaciones();
   }, [cargarProductos, cargarClientesYOperaciones, user?.rol]);
+
+
 
   const recargarTodo = useCallback(async () => {
     if (user?.rol === 'taller') {

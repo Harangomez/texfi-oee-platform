@@ -61,8 +61,6 @@ export const OperariosTab: React.FC = () => {
     }
   };
 
-  // ... resto del código permanece igual
-
   const archivarOperario = async (id: number) => {
     if (confirm('¿Estás seguro de que quieres archivar este operario?')) {
       try {
