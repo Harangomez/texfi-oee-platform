@@ -59,41 +59,29 @@ export class ProductoController {
     return this.productoRepository.find(filter);
   }
 
-  @get('/productos/{id}/operaciones')
-  @response(200, {
-    description: 'Operaciones del producto',
-    content: {
-      'application/json': {
-        schema: {
-          type: 'array',
-          items: getModelSchemaRef(Operacion, {includeRelations: true}),
-        },
+  // ✅ REEMPLAZAR el método getOperaciones con esta versión mejorada
+@get('/productos/{id}/operaciones')
+@response(200, {
+  description: 'Operaciones del producto',
+  content: {
+    'application/json': {
+      schema: {
+        type: 'array',
+        items: getModelSchemaRef(Operacion, {includeRelations: true}),
       },
     },
-  })
-  async getOperaciones(
-    @param.path.number('id') productoId: number,
-  ): Promise<Operacion[]> {
-    // 1. Buscar todas las relaciones operacion-producto para este producto
-    const relaciones = await this.operacionProductoRepository.find({
-      where: { productoId }
-    });
-
-    // 2. Extraer los IDs de las operaciones
-    const operacionIds = relaciones.map(rel => rel.operacionId);
-
-    // 3. Si no hay operaciones, retornar array vacío
-    if (operacionIds.length === 0) {
-      return [];
-    }
-
-    // 4. Buscar las operaciones completas usando los IDs
-    const operaciones = await this.operacionRepository.find({
-      where: { id: { inq: operacionIds } }
-    });
-
-    return operaciones;
-  }
+  },
+})
+async getOperaciones(
+  @param.path.number('id') productoId: number,
+): Promise<Operacion[]> {
+  // ✅ Opción 1: Usar inclusionResolver (más directo)
+  const producto = await this.productoRepository.findById(productoId, {
+    include: ['operaciones']
+  });
+  
+  return producto.operaciones || [];
+}
 
   @patch('/productos')
   @response(200, {
