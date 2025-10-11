@@ -20,7 +20,24 @@ export const ProductosTab: React.FC = () => {
   
   const { register, handleSubmit, reset, formState: { errors } } = useForm<Omit<Producto, 'id'>>();
 
-  const cargarDatos = useCallback(async () => {
+  const cargarProductos = useCallback(async () => {
+      if (!taller) return;
+      
+      try {
+        const data = await productoService.getAll();
+        // Filtrar operarios del taller actual
+        const productosDelTaller = data.filter(producto => producto.tallerId === taller.id);
+        setProductos(productosDelTaller);
+      } catch (error) {
+        console.error('Error cargando productos:', error);
+      }
+    }, [taller]); // Dependencias de useCallback
+  
+    useEffect(() => {
+      cargarProductos();
+    }, [cargarProductos]); // Ahora cargarProductos es una dependencia estable
+
+  /*const cargarDatos = useCallback(async () => {
     try {
       let productosData: Producto[] = [];
       const clientesData = await clienteService.getAll();
@@ -47,7 +64,7 @@ export const ProductosTab: React.FC = () => {
 
   useEffect(() => {
     cargarDatos();
-  }, [cargarDatos]);
+  }, [cargarDatos]);*/
 
   const onSubmit = async (data: Omit<Producto, 'id'>) => {
     setCargando(true);
