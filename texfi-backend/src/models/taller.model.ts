@@ -1,10 +1,9 @@
 import {Entity, model, property, hasMany, belongsTo} from '@loopback/repository';
 import {Maquina} from './maquina.model';
 import {Operario} from './operario.model';
-import {Cliente} from './cliente.model';
-import {TallerCliente} from './taller-cliente.model';
 import {Produccion} from './produccion.model';
 import {Usuario} from './usuario.model';
+import {Producto} from './producto.model';
 
 @model()
 
@@ -19,7 +18,7 @@ export class Taller extends Entity {
   
   @hasMany(() => Maquina) maquinas: Maquina[];
   @hasMany(() => Operario) operarios: Operario[];
-  @hasMany(() => Cliente, {through: {model: () => TallerCliente}}) clientes: Cliente[];
+  @hasMany(() => Producto) productos: Producto[];
   @hasMany(() => Produccion) producciones: Produccion[];
   @belongsTo(() => Usuario) usuarioId: number; 
   

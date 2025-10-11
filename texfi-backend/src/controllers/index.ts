@@ -7,7 +7,6 @@ export * from './operario.controller';
 export * from './produccion-maquina.controller';
 export * from './produccion.controller';
 export * from './producto.controller';
-export * from './taller-cliente.controller';
 export * from './taller.controller';
 export * from './usuario.controller';
 export * from './produccion-operario.controller';

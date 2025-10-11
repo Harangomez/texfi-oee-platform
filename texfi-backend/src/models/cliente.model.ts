@@ -1,6 +1,4 @@
 import {Entity, model, property, hasMany, belongsTo} from '@loopback/repository';
-import {Taller} from './taller.model';
-import {TallerCliente} from './taller-cliente.model';
 import {Producto} from './producto.model';
 import {Usuario} from './usuario.model';
 
@@ -16,7 +14,6 @@ export class Cliente extends Entity {
   @property({type: 'string', required: true, jsonSchema: {format: 'email'}}) email: string;
   @property({type: 'string', required: true}) telefono: string;
     
-  @hasMany(() => Taller, {through: {model: () => TallerCliente}}) talleres: Taller[];
   @hasMany(() => Producto) productos: Producto[];
   @belongsTo(() => Usuario) usuarioId: number;
   

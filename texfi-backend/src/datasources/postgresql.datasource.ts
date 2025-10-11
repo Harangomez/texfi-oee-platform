@@ -13,7 +13,7 @@ const config = {
   user: 'postgres',
   password: 'Jolukateo1511',
   database: 'texfi_db',
-  // Comentario final*/
+  //Comentario final*/
 };
 
 @lifeCycleObserver('datasource')

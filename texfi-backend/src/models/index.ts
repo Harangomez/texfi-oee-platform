@@ -6,7 +6,6 @@ export * from './operacion.model';
 export * from './cliente.model';
 export * from './produccion.model';
 export * from './detalle-produccion.model';
-export * from './taller-cliente.model';
 export * from './operacion-producto.model';
 export * from './produccion-maquina.model';
 export * from './produccion-operario.model';

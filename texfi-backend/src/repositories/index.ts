@@ -8,6 +8,5 @@ export * from './produccion-maquina.repository';
 export * from './produccion-operario.repository';
 export * from './produccion.repository';
 export * from './producto.repository';
-export * from './taller-cliente.repository';
 export * from './taller.repository';
 export * from './usuario.repository';
