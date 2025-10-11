@@ -67,8 +67,10 @@ export interface Producto {
   referencia: string;
   descripcion?: string;
   tiempoEstandar?: number;
-  clienteId?: number;
+  clienteId?: number;  
   cliente?: Cliente;
+  tallerId?: number;
+  taller?: Taller;
   operaciones?: Operacion[];
   producciones?: Produccion[];
 }

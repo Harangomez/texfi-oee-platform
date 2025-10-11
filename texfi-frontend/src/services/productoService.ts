@@ -42,10 +42,4 @@ export const productoService = {
   async removeOperacion(productoId: number, operacionId: number): Promise<void> {
     await api.delete(`/productos/${productoId}/operaciones/${operacionId}`);
   },
-
-  // NUEVO: Obtener productos por taller específico
-  async getByTaller(tallerId: number): Promise<ProductoWithRelations[]> {
-    const response = await api.get(`/productos/por-taller/${tallerId}`);
-    return response.data;
-  }
 };

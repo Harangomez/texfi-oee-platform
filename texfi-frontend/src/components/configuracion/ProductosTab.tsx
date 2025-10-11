@@ -22,45 +22,16 @@ export const ProductosTab: React.FC = () => {
 
   const cargarDatos = useCallback(async () => {
     try {
-      let clientesData: Cliente[] = [];
       let productosData: Producto[] = [];
+      const clientesData = await clienteService.getAll();
 
       if (user?.rol === 'cliente' && cliente) {
-        // Cliente ve solo sus productos
-        [productosData, clientesData] = await Promise.all([
-          productoService.getAll(),
-          clienteService.getAll()
-        ]);
+        productosData = await productoService.getAll();
         productosData = productosData.filter(producto => producto.clienteId === cliente.id);
       } else if (user?.rol === 'taller' && taller) {
-        // 🚨 CORRECCIÓN: Taller ve solo productos de sus clientes
-        try {
-          // Obtener clientes del taller
-          clientesData = await clienteService.getByTaller(taller.id!);
-          console.log('📋 Clientes del taller:', clientesData.length);
-          
-          // Obtener todos los productos y filtrar por clientes del taller
-          productosData = await productoService.getAll();
-          console.log('📦 Todos los productos:', productosData.length);
-          
-          const clientesIds = clientesData.map(c => c.id!);
-          productosData = productosData.filter(producto => 
-            clientesIds.includes(producto.clienteId!)
-          );
-          console.log('✅ Productos filtrados del taller:', productosData.length);
-          
-        } catch (error) {
-          console.error('❌ Error cargando datos del taller:', error);
-          // Fallback: cargar todos los clientes si falla el endpoint específico
-          clientesData = await clienteService.getAll();
-          productosData = await productoService.getAll();
-        }
+        productosData = await productoService.getAll(taller.id);
       } else {
-        // Usuario admin o sin rol específico ve todo
-        [productosData, clientesData] = await Promise.all([
-          productoService.getAll(),
-          clienteService.getAll()
-        ]);
+        productosData = await productoService.getAll();
       }
 
       const operacionesData = await operacionService.getAll();
@@ -68,13 +39,6 @@ export const ProductosTab: React.FC = () => {
       setProductos(productosData);
       setClientes(clientesData);
       setOperaciones(operacionesData);
-
-      console.log('📊 Datos cargados:', {
-        productos: productosData.length,
-        clientes: clientesData.length,
-        operaciones: operacionesData.length,
-        rol: user?.rol
-      });
 
     } catch (error) {
       console.error('Error cargando datos:', error);
@@ -88,49 +52,28 @@ export const ProductosTab: React.FC = () => {
   const onSubmit = async (data: Omit<Producto, 'id'>) => {
     setCargando(true);
     try {
-      // Si el usuario es cliente, asignar automáticamente su clienteId
       let datosProducto;
-      
+
       if (user?.rol === 'cliente' && cliente) {
         datosProducto = {
           ...data,
           clienteId: cliente.id
         };
-      } else if (user?.rol === 'taller') {
-        // 🚨 CORRECCIÓN: Validar que el cliente seleccionado pertenece al taller
-        if (!data.clienteId) {
-          alert('Debes seleccionar un cliente para el producto');
-          return;
-        }
-        
-        const clienteSeleccionado = clientes.find(c => c.id === Number(data.clienteId));
-        if (!clienteSeleccionado) {
-          alert('El cliente seleccionado no es válido para este taller');
-          return;
-        }
-        
-        datosProducto = {
-          ...data,
-          clienteId: Number(data.clienteId)
-        };
       } else {
-        // Para otros roles
         if (!data.clienteId) {
           alert('Debes seleccionar un cliente para el producto');
           return;
         }
         datosProducto = {
           ...data,
-          clienteId: Number(data.clienteId)
+          clienteId: Number(data.clienteId),
+          tallerId: taller?.id // ✅ MANTENER - Backend no asigna automáticamente
         };
       }
 
-      // Convertir tiempoEstandar a número si existe
       if (data.tiempoEstandar) {
         datosProducto.tiempoEstandar = Number(data.tiempoEstandar);
       }
-
-      console.log('Enviando datos del producto:', datosProducto);
 
       let productoId: number;
 
@@ -142,7 +85,6 @@ export const ProductosTab: React.FC = () => {
         productoId = producto.id!;
       }
 
-      // Agregar operaciones al producto
       if (operacionesSeleccionadas.length > 0) {
         for (const operacionId of operacionesSeleccionadas) {
           await productoService.addOperacion(productoId, operacionId);
@@ -155,37 +97,8 @@ export const ProductosTab: React.FC = () => {
       setOperacionesSeleccionadas([]);
       alert('Producto guardado exitosamente');
     } catch (error: unknown) {
-      console.error('Error completo guardando producto:', error);
-      
-      if (error instanceof Error && 'response' in error) {
-        interface AxiosErrorType {
-          response?: {
-            data?: {
-              error?: { message: string };
-              message?: string;
-              details?: { messages: Record<string, string[]> };
-            };
-          };
-        }
-        const axiosError = error as AxiosErrorType;    
-        
-        console.error('Response data:', axiosError.response?.data);
-        
-        const errorData = axiosError.response?.data;
-        let errorMessage = 'Error al guardar el producto';
-        
-        if (errorData?.error?.message) {
-          errorMessage = errorData.error.message;
-        } else if (errorData?.message) {
-          errorMessage = errorData.message;
-        } else if (errorData?.details?.messages) {
-          errorMessage = Object.values(errorData.details.messages).flat().join(', ');
-        }
-        
-        alert(`Error: ${errorMessage}`);
-      } else {
-        alert('Error desconocido al guardar el producto');
-      }
+      console.error('Error guardando producto:', error);
+      alert('Error al guardar el producto');
     } finally {
       setCargando(false);
     }
@@ -200,15 +113,6 @@ export const ProductosTab: React.FC = () => {
   };
 
   const editarProducto = (producto: Producto) => {
-    // 🚨 CORRECCIÓN: Validar que el taller puede editar este producto
-    if (user?.rol === 'taller') {
-      const puedeEditar = clientes.some(cliente => cliente.id === producto.clienteId);
-      if (!puedeEditar) {
-        alert('No tienes permisos para editar este producto');
-        return;
-      }
-    }
-    
     setEditando(producto);
     reset({
       referencia: producto.referencia,
@@ -216,7 +120,7 @@ export const ProductosTab: React.FC = () => {
       tiempoEstandar: producto.tiempoEstandar,
       clienteId: producto.clienteId,
     });
-    // Cargar operaciones del producto
+    
     if (producto.operaciones) {
       setOperacionesSeleccionadas(producto.operaciones.map(op => op.id!));
     }
@@ -243,7 +147,6 @@ export const ProductosTab: React.FC = () => {
               error={errors.referencia?.message}
             />
             
-            {/* 🚨 CORRECCIÓN: Mostrar solo clientes del taller */}
             {user?.rol !== 'cliente' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -264,16 +167,6 @@ export const ProductosTab: React.FC = () => {
                 </select>
                 {errors.clienteId && (
                   <p className="text-sm text-red-600 mt-1">{errors.clienteId.message}</p>
-                )}
-                {user?.rol === 'taller' && clientes.length === 0 && (
-                  <p className="text-sm text-yellow-600 mt-1">
-                    No tienes clientes asignados. Agrega clientes primero.
-                  </p>
-                )}
-                {user?.rol === 'taller' && clientes.length > 0 && (
-                  <p className="text-sm text-gray-500 mt-1">
-                    {clientes.length} cliente(s) disponible(s)
-                  </p>
                 )}
               </div>
             )}
@@ -341,12 +234,10 @@ export const ProductosTab: React.FC = () => {
       <div className="bg-white rounded-lg shadow">
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">
-            Lista de Productos {user?.rol === 'taller' && '(de mis clientes)'}
-            {user?.rol === 'taller' && (
-              <span className="text-sm font-normal text-gray-500 ml-2">
-                {productos.length} producto(s)
-              </span>
-            )}
+            Lista de Productos {user?.rol === 'taller' && '(de mi taller)'}
+            <span className="text-sm font-normal text-gray-500 ml-2">
+              {productos.length} producto(s)
+            </span>
           </h3>
         </div>
         
@@ -401,7 +292,7 @@ export const ProductosTab: React.FC = () => {
                 <tr>
                   <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
                     {user?.rol === 'taller' 
-                      ? 'No hay productos de tus clientes' 
+                      ? 'No hay productos en tu taller' 
                       : 'No hay productos registrados'
                     }
                   </td>
