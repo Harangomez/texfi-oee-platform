@@ -20,31 +20,50 @@ export const ProductosTab: React.FC = () => {
   
   const { register, handleSubmit, reset, formState: { errors } } = useForm<Omit<Producto, 'id'>>();
 
-const cargarProductos = useCallback(async () => {
-  if (!taller) return;
-  
-  try {
-    const [productosData, clientesData] = await Promise.all([
-      productoService.getAll(),
-      clienteService.getAll()
-    ]);
+  // ✅ CARGAR PRODUCTOS CON OPERACIONES DESDE TABLA INTERMEDIA
+  const cargarProductos = useCallback(async () => {
+    if (!taller) return;
     
-    // ✅ ENRIQUECER DATOS: Agregar cliente a cada producto
-    const productosEnriquecidos = productosData
-      .filter(producto => producto.tallerId === taller.id)
-      .map(producto => ({
-        ...producto,
-        cliente: clientesData.find(cliente => cliente.id === producto.clienteId)
-      }));
-    
-    console.log('✅ Productos enriquecidos:', productosEnriquecidos);
-    setProductos(productosEnriquecidos);
-  } catch (error) {
-    console.error('Error cargando productos:', error);
-  }
-}, [taller]);
+    try {
+      const [productosData, clientesData, /*operacionesData*/] = await Promise.all([
+        productoService.getAll(),
+        clienteService.getAll(),
+        operacionService.getAll()
+      ]);
+      
+      // ✅ ENRIQUECER DATOS: Agregar cliente y operaciones a cada producto
+      const productosEnriquecidos = await Promise.all(
+        productosData
+          .filter(producto => producto.tallerId === taller.id)
+          .map(async (producto) => {
+            try {
+              // ✅ CARGAR OPERACIONES DESDE TABLA INTERMEDIA
+              const operacionesProducto = await productoService.getOperaciones(producto.id!);
+              
+              return {
+                ...producto,
+                cliente: clientesData.find(cliente => cliente.id === producto.clienteId),
+                operaciones: operacionesProducto
+              };
+            } catch (error) {
+              console.error(`Error cargando operaciones del producto ${producto.id}:`, error);
+              return {
+                ...producto,
+                cliente: clientesData.find(cliente => cliente.id === producto.clienteId),
+                operaciones: []
+              };
+            }
+          })
+      );
+      
+      console.log('✅ Productos enriquecidos con operaciones:', productosEnriquecidos);
+      setProductos(productosEnriquecidos);
+    } catch (error) {
+      console.error('Error cargando productos:', error);
+    }
+  }, [taller]);
 
-  // ✅ CARGAR CLIENTES Y OPERACIONES
+  // ✅ CARGAR CLIENTES Y OPERACIONES PARA FORMULARIO
   const cargarClientesYOperaciones = useCallback(async () => {
     try {
       const [clientesData, operacionesData] = await Promise.all([
@@ -65,8 +84,6 @@ const cargarProductos = useCallback(async () => {
     }
     cargarClientesYOperaciones();
   }, [cargarProductos, cargarClientesYOperaciones, user?.rol]);
-
-
 
   const recargarTodo = useCallback(async () => {
     if (user?.rol === 'taller') {
@@ -149,8 +166,11 @@ const cargarProductos = useCallback(async () => {
       clienteId: producto.clienteId,
     });
     
+    // ✅ RESALTAR OPERACIONES AL EDITAR
     if (producto.operaciones) {
       setOperacionesSeleccionadas(producto.operaciones.map(op => op.id!));
+    } else {
+      setOperacionesSeleccionadas([]);
     }
   };
 
@@ -286,6 +306,9 @@ const cargarProductos = useCallback(async () => {
                   Tiempo Estándar
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Operaciones
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Acciones
                 </th>
               </tr>
@@ -305,6 +328,23 @@ const cargarProductos = useCallback(async () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {producto.tiempoEstandar ? `${producto.tiempoEstandar} min` : 'N/A'}
                   </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {/* ✅ OPERACIONES COMO BADGES */}
+                    <div className="flex flex-wrap gap-1 max-w-xs">
+                      {producto.operaciones && producto.operaciones.length > 0 ? (
+                        producto.operaciones.map((operacion) => (
+                          <span
+                            key={operacion.id}
+                            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                          >
+                            {operacion.nombre}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-gray-400 text-xs">Sin operaciones</span>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button
                       onClick={() => editarProducto(producto)}
@@ -318,7 +358,7 @@ const cargarProductos = useCallback(async () => {
               
               {productos.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
                     {user?.rol === 'taller' 
                       ? 'No hay productos en tu taller' 
                       : 'No hay productos registrados'
