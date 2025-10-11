@@ -20,51 +20,48 @@ export const ProductosTab: React.FC = () => {
   
   const { register, handleSubmit, reset, formState: { errors } } = useForm<Omit<Producto, 'id'>>();
 
+  // ✅ CARGAR PRODUCTOS (filtrado manual por tallerId)
   const cargarProductos = useCallback(async () => {
-      if (!taller) return;
-      
-      try {
-        const data = await productoService.getAll();
-        // Filtrar operarios del taller actual
-        const productosDelTaller = data.filter(producto => producto.tallerId === taller.id);
-        setProductos(productosDelTaller);
-      } catch (error) {
-        console.error('Error cargando productos:', error);
-      }
-    }, [taller]); // Dependencias de useCallback
-  
-    useEffect(() => {
-      cargarProductos();
-    }, [cargarProductos]); // Ahora cargarProductos es una dependencia estable
-
-  /*const cargarDatos = useCallback(async () => {
+    if (!taller) return;
+    
     try {
-      let productosData: Producto[] = [];
-      const clientesData = await clienteService.getAll();
+      const data = await productoService.getAll();
+      // Filtrar productos del taller actual
+      const productosDelTaller = data.filter(producto => producto.tallerId === taller.id);
+      setProductos(productosDelTaller);
+    } catch (error) {
+      console.error('Error cargando productos:', error);
+    }
+  }, [taller]);
 
-      if (user?.rol === 'cliente' && cliente) {
-        productosData = await productoService.getAll();
-        productosData = productosData.filter(producto => producto.clienteId === cliente.id);
-      } else if (user?.rol === 'taller' && taller) {
-        productosData = await productoService.getAll(taller.id);
-      } else {
-        productosData = await productoService.getAll();
-      }
-
-      const operacionesData = await operacionService.getAll();
+  // ✅ CARGAR CLIENTES Y OPERACIONES
+  const cargarClientesYOperaciones = useCallback(async () => {
+    try {
+      const [clientesData, operacionesData] = await Promise.all([
+        clienteService.getAll(),
+        operacionService.getAll()
+      ]);
       
-      setProductos(productosData);
       setClientes(clientesData);
       setOperaciones(operacionesData);
-
     } catch (error) {
-      console.error('Error cargando datos:', error);
+      console.error('Error cargando clientes u operaciones:', error);
     }
-  }, [user, cliente, taller]);
+  }, []);
 
   useEffect(() => {
-    cargarDatos();
-  }, [cargarDatos]);*/
+    if (user?.rol === 'taller') {
+      cargarProductos();
+    }
+    cargarClientesYOperaciones();
+  }, [cargarProductos, cargarClientesYOperaciones, user?.rol]);
+
+  const recargarTodo = useCallback(async () => {
+    if (user?.rol === 'taller') {
+      await cargarProductos();
+    }
+    await cargarClientesYOperaciones();
+  }, [cargarProductos, cargarClientesYOperaciones, user?.rol]);
 
   const onSubmit = async (data: Omit<Producto, 'id'>) => {
     setCargando(true);
@@ -84,13 +81,15 @@ export const ProductosTab: React.FC = () => {
         datosProducto = {
           ...data,
           clienteId: Number(data.clienteId),
-          tallerId: taller?.id // ✅ MANTENER - Backend no asigna automáticamente
+          tallerId: taller?.id
         };
       }
 
       if (data.tiempoEstandar) {
         datosProducto.tiempoEstandar = Number(data.tiempoEstandar);
       }
+
+      console.log('Enviando datos del producto:', datosProducto);
 
       let productoId: number;
 
@@ -108,7 +107,7 @@ export const ProductosTab: React.FC = () => {
         }
       }
       
-      await cargarDatos();
+      await recargarTodo();
       reset();
       setEditando(null);
       setOperacionesSeleccionadas([]);
