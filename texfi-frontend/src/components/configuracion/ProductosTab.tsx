@@ -22,38 +22,36 @@ export const ProductosTab: React.FC = () => {
 
   // ✅ CARGAR PRODUCTOS CON OPERACIONES DESDE TABLA INTERMEDIA
   const cargarProductos = useCallback(async () => {
-    if (!taller) return;
+    if (!taller?.id) return;
     
     try {
-      const [productosData, clientesData, /*operacionesData*/] = await Promise.all([
-        productoService.getAll(),
-        clienteService.getAll(),
-        operacionService.getAll()
+      const [productosData, clientesData] = await Promise.all([
+        // ✅ CAMBIAR: Usar el nuevo endpoint por taller
+        productoService.getByTaller(taller.id),
+        clienteService.getAll()
       ]);
       
       // ✅ ENRIQUECER DATOS: Agregar cliente y operaciones a cada producto
       const productosEnriquecidos = await Promise.all(
-        productosData
-          .filter(producto => producto.tallerId === taller.id)
-          .map(async (producto) => {
-            try {
-              // ✅ CARGAR OPERACIONES DESDE TABLA INTERMEDIA
-              const operacionesProducto = await productoService.getOperaciones(producto.id!);
-              
-              return {
-                ...producto,
-                cliente: clientesData.find(cliente => cliente.id === producto.clienteId),
-                operaciones: operacionesProducto
-              };
-            } catch (error) {
-              console.error(`Error cargando operaciones del producto ${producto.id}:`, error);
-              return {
-                ...producto,
-                cliente: clientesData.find(cliente => cliente.id === producto.clienteId),
-                operaciones: []
-              };
-            }
-          })
+        productosData.map(async (producto) => {
+          try {
+            // ✅ CARGAR OPERACIONES DESDE TABLA INTERMEDIA
+            const operacionesProducto = await productoService.getOperaciones(producto.id!);
+            
+            return {
+              ...producto,
+              cliente: clientesData.find(cliente => cliente.id === producto.clienteId),
+              operaciones: operacionesProducto
+            };
+          } catch (error) {
+            console.error(`Error cargando operaciones del producto ${producto.id}:`, error);
+            return {
+              ...producto,
+              cliente: clientesData.find(cliente => cliente.id === producto.clienteId),
+              operaciones: []
+            };
+          }
+        })
       );
       
       console.log('✅ Productos enriquecidos con operaciones:', productosEnriquecidos);
@@ -167,7 +165,7 @@ export const ProductosTab: React.FC = () => {
     });
     
     // ✅ RESALTAR OPERACIONES AL EDITAR
-    if (producto.operaciones) {
+    if (producto.operaciones && producto.operaciones.length > 0) {
       setOperacionesSeleccionadas(producto.operaciones.map(op => op.id!));
     } else {
       setOperacionesSeleccionadas([]);
