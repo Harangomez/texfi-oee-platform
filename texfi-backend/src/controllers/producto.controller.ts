@@ -75,7 +75,8 @@ async findByTallerId(
   @param.path.number('tallerId') tallerId: number,
 ): Promise<Producto[]> {
   return this.productoRepository.find({
-    where: { tallerId }
+    where: { tallerId },
+    include: ['operaciones']
   });
 }
 
