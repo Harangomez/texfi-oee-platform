@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
-import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import { productoService } from '../../services/productoService';
 import { clienteService } from '../../services/clienteService';
 import { operacionService } from '../../services/operacionService';
