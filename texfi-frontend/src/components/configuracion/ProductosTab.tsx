@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 import { productoService } from '../../services/productoService';
 import { clienteService } from '../../services/clienteService';
 import { operacionService } from '../../services/operacionService';
@@ -20,23 +20,21 @@ export const ProductosTab: React.FC = () => {
   
   const { register, handleSubmit, reset, formState: { errors } } = useForm<Omit<Producto, 'id'>>();
 
-  // ✅ CARGAR PRODUCTOS CON OPERACIONES DESDE TABLA INTERMEDIA (VERSIÓN FUNCIONAL)
+  // ✅ VERSIÓN ORIGINAL QUE SÍ FUNCIONABA
   const cargarProductos = useCallback(async () => {
     if (!taller) return;
     
     try {
       const [productosData, clientesData] = await Promise.all([
-        productoService.getAll(), // ✅ Usar getAll() que funciona
+        productoService.getAll(),
         clienteService.getAll()
       ]);
       
-      // ✅ ENRIQUECER DATOS: Agregar cliente y operaciones a cada producto
       const productosEnriquecidos = await Promise.all(
         productosData
-          .filter(producto => producto.tallerId === taller.id) // ✅ Filtrar en frontend
+          .filter(producto => producto.tallerId === taller.id)
           .map(async (producto) => {
             try {
-              // ✅ CARGAR OPERACIONES DESDE TABLA INTERMEDIA (esto SÍ funciona)
               const operacionesProducto = await productoService.getOperaciones(producto.id!);
               
               return {
@@ -62,7 +60,6 @@ export const ProductosTab: React.FC = () => {
     }
   }, [taller]);
 
-  // ✅ CARGAR CLIENTES Y OPERACIONES PARA FORMULARIO
   const cargarClientesYOperaciones = useCallback(async () => {
     try {
       const [clientesData, operacionesData] = await Promise.all([
@@ -165,8 +162,7 @@ export const ProductosTab: React.FC = () => {
       clienteId: producto.clienteId,
     });
     
-    // ✅ RESALTAR OPERACIONES AL EDITAR
-    if (producto.operaciones && producto.operaciones.length > 0) {
+    if (producto.operaciones) {
       setOperacionesSeleccionadas(producto.operaciones.map(op => op.id!));
     } else {
       setOperacionesSeleccionadas([]);
@@ -328,7 +324,6 @@ export const ProductosTab: React.FC = () => {
                     {producto.tiempoEstandar ? `${producto.tiempoEstandar} min` : 'N/A'}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
-                    {/* ✅ OPERACIONES COMO BADGES */}
                     <div className="flex flex-wrap gap-1 max-w-xs">
                       {producto.operaciones && producto.operaciones.length > 0 ? (
                         producto.operaciones.map((operacion) => (

@@ -1,17 +1,17 @@
 import {Count, CountSchema, Filter, FilterExcludingWhere, repository, Where} from '@loopback/repository';
 import {post, param, get, getModelSchemaRef, patch, put, del, requestBody, response} from '@loopback/rest';
-import {Producto, Operacion} from '../models'; // ✅ Agregar Operacion
+import {Producto, Operacion} from '../models';
 import {ProductoRepository} from '../repositories';
-import {OperacionProductoRepository} from '../repositories'; // ✅ Agregar este repository
-import {OperacionRepository} from '../repositories'; // ✅ Agregar este repository
+import {OperacionProductoRepository} from '../repositories';
+import {OperacionRepository} from '../repositories';
 
 export class ProductoController {
   constructor(
     @repository(ProductoRepository)
     public productoRepository: ProductoRepository,
-    @repository(OperacionProductoRepository) // ✅ Inyectar el repository
+    @repository(OperacionProductoRepository)
     public operacionProductoRepository: OperacionProductoRepository,
-    @repository(OperacionRepository) // ✅ Inyectar el repository
+    @repository(OperacionRepository)
     public operacionRepository: OperacionRepository,
   ) {}
 
@@ -35,6 +35,7 @@ export class ProductoController {
   ): Promise<Producto> {
     return this.productoRepository.create(producto);
   }
+
   @get('/productos/count')
   @response(200, {
     description: 'Producto model count',
@@ -43,6 +44,7 @@ export class ProductoController {
   async count(@param.where(Producto) where?: Where<Producto>): Promise<Count> {
     return this.productoRepository.count(where);
   }
+
   @get('/productos')
   @response(200, {
     description: 'Array of Producto model instances',
@@ -59,29 +61,39 @@ export class ProductoController {
     return this.productoRepository.find(filter);
   }
 
-// ✅ REEMPLAZAR el método getOperaciones con esta versión mejorada
-@get('/productos/{id}/operaciones')
-@response(200, {
-  description: 'Operaciones del producto',
-  content: {
-    'application/json': {
-      schema: {
-        type: 'array',
-        items: getModelSchemaRef(Operacion, {includeRelations: true}),
+  // ✅ MÉTODO getOperaciones QUE SÍ FUNCIONABA
+  @get('/productos/{id}/operaciones')
+  @response(200, {
+    description: 'Operaciones del producto',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(Operacion, {includeRelations: true}),
+        },
       },
     },
-  },
-})
-async getOperaciones(
-  @param.path.number('id') productoId: number,
-): Promise<Operacion[]> {
-  // ✅ Opción 1: Usar inclusionResolver (más directo)
-  const producto = await this.productoRepository.findById(productoId, {
-    include: ['operaciones']
-  });
-  
-  return producto.operaciones || [];
-}
+  })
+  async getOperaciones(
+    @param.path.number('id') productoId: number,
+  ): Promise<Operacion[]> {
+    // ✅ IMPLEMENTACIÓN ORIGINAL FUNCIONAL
+    const relaciones = await this.operacionProductoRepository.find({
+      where: { productoId }
+    });
+
+    const operacionIds = relaciones.map(rel => rel.operacionId);
+
+    if (operacionIds.length === 0) {
+      return [];
+    }
+
+    const operaciones = await this.operacionRepository.find({
+      where: { id: { inq: operacionIds } }
+    });
+
+    return operaciones;
+  }
 
   @patch('/productos')
   @response(200, {
@@ -101,6 +113,7 @@ async getOperaciones(
   ): Promise<Count> {
     return this.productoRepository.updateAll(producto, where);
   }
+
   @get('/productos/{id}')
   @response(200, {
     description: 'Producto model instance',
@@ -116,6 +129,7 @@ async getOperaciones(
   ): Promise<Producto> {
     return this.productoRepository.findById(id, filter);
   }
+
   @patch('/productos/{id}')
   @response(204, {
     description: 'Producto PATCH success',
@@ -133,6 +147,7 @@ async getOperaciones(
   ): Promise<void> {
     await this.productoRepository.updateById(id, producto);
   }
+
   @put('/productos/{id}')
   @response(204, {
     description: 'Producto PUT success',
@@ -140,6 +155,7 @@ async getOperaciones(
   async replaceById(@param.path.number('id') id: number, @requestBody() producto: Producto): Promise<void> {
     await this.productoRepository.replaceById(id, producto);
   }
+
   @del('/productos/{id}')
   @response(204, {
     description: 'Producto DELETE success',
