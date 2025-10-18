@@ -20,27 +20,42 @@ export const ProductosTab: React.FC = () => {
   
   const { register, handleSubmit, reset, formState: { errors } } = useForm<Omit<Producto, 'id'>>();
 
-  // ✅ CARGAR PRODUCTOS CON OPERACIONES INCLUIDAS
+  // ✅ CARGAR PRODUCTOS CON OPERACIONES DESDE TABLA INTERMEDIA (VERSIÓN FUNCIONAL)
   const cargarProductos = useCallback(async () => {
-    if (!taller?.id) return;
+    if (!taller) return;
     
     try {
       const [productosData, clientesData] = await Promise.all([
-        productoService.getByTaller(taller.id),
+        productoService.getAll(), // ✅ Usar getAll() que funciona
         clienteService.getAll()
       ]);
       
-      // ✅ VERSIÓN SIMPLIFICADA - Las operaciones ya vienen incluidas
-      const productosEnriquecidos = productosData.map((producto) => ({
-        ...producto,
-        cliente: clientesData.find(cliente => cliente.id === producto.clienteId)
-        // operaciones ya vienen incluidas desde el backend ✅
-      }));
+      // ✅ ENRIQUECER DATOS: Agregar cliente y operaciones a cada producto
+      const productosEnriquecidos = await Promise.all(
+        productosData
+          .filter(producto => producto.tallerId === taller.id) // ✅ Filtrar en frontend
+          .map(async (producto) => {
+            try {
+              // ✅ CARGAR OPERACIONES DESDE TABLA INTERMEDIA (esto SÍ funciona)
+              const operacionesProducto = await productoService.getOperaciones(producto.id!);
+              
+              return {
+                ...producto,
+                cliente: clientesData.find(cliente => cliente.id === producto.clienteId),
+                operaciones: operacionesProducto
+              };
+            } catch (error) {
+              console.error(`Error cargando operaciones del producto ${producto.id}:`, error);
+              return {
+                ...producto,
+                cliente: clientesData.find(cliente => cliente.id === producto.clienteId),
+                operaciones: []
+              };
+            }
+          })
+      );
       
-      console.log('✅ Productos con operaciones:', productosEnriquecidos);
-      console.log('🔍 Primer producto con operaciones:', productosData[0]);
-      console.log('🔍 Operaciones incluidas:', productosData[0]?.operaciones);
-      
+      console.log('✅ Productos enriquecidos con operaciones:', productosEnriquecidos);
       setProductos(productosEnriquecidos);
     } catch (error) {
       console.error('Error cargando productos:', error);
