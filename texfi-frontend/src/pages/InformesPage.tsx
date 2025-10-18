@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import { Mail, Send, Star } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface FeedbackForm {
-  nombre: string;
-  email: string;
   satisfaccion: number;
   facilidadUso: number;
   utilidad: number;
+  detallesCalificacion: string;
   comentarios: string;
   sugerencias: string;
 }
@@ -17,8 +16,29 @@ interface FeedbackForm {
 export const InformesPage: React.FC = () => {
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(false);
+  const { user, taller, cliente } = useAuth();
   
   const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<FeedbackForm>();
+
+  // ✅ Obtener email según el tipo de usuario
+  const obtenerEmailUsuario = () => {
+    if (user?.rol === 'taller' && taller) {
+      return taller.email;
+    } else if (user?.rol === 'cliente' && cliente) {
+      return cliente.email;
+    }
+    return 'No disponible';
+  };
+
+  // ✅ Obtener nombre según el tipo de usuario
+  const obtenerNombreUsuario = () => {
+    if (user?.rol === 'taller' && taller) {
+      return taller.nombre;
+    } else if (user?.rol === 'cliente' && cliente) {
+      return cliente.nombre;
+    }
+    return user?.nombre || 'Usuario no identificado';
+  };
 
   const onSubmit = async (data: FeedbackForm) => {
     setEnviando(true);
@@ -26,19 +46,25 @@ export const InformesPage: React.FC = () => {
     try {
       const formData = new FormData();
       
-      // Agregar todos los campos del formulario
-      formData.append('nombre', data.nombre);
-      formData.append('email', data.email);
+      // ✅ Datos automáticos del usuario desde las relaciones
+      formData.append('nombre', obtenerNombreUsuario());
+      formData.append('email', obtenerEmailUsuario());
+      formData.append('rol', user?.rol || 'No disponible');
+      
+      // ✅ Datos del formulario
       formData.append('satisfaccion', data.satisfaccion.toString());
       formData.append('facilidadUso', data.facilidadUso.toString());
       formData.append('utilidad', data.utilidad.toString());
+      formData.append('detallesCalificacion', data.detallesCalificacion);
       formData.append('comentarios', data.comentarios);
       formData.append('sugerencias', data.sugerencias);
-      formData.append('_subject', `Nuevo Feedback - ${data.nombre}`);
+      
+      // ✅ Configuración FormSubmit
+      formData.append('_subject', `Nuevo Feedback - ${obtenerNombreUsuario()}`);
       formData.append('_template', 'table');
 
-      // Enviar a FormSubmit.co
-      const response = await fetch('https://formsubmit.co/ajax/TU_EMAIL_REAL@gmail.com', {
+      // ✅ Tu email actualizado
+      const response = await fetch('https://formsubmit.co/ajax/harangomez@gmail.com', {
         method: 'POST',
         body: formData,
       });
@@ -125,33 +151,15 @@ export const InformesPage: React.FC = () => {
             Encuesta de Satisfacción
           </h1>
           <p className="text-gray-600">
-            Tu opinión nos ayuda a mejorar nuestra plataforma
+            Hola {obtenerNombreUsuario()}, tu opinión nos ayuda a mejorar nuestra plataforma
           </p>
+          <div className="mt-2 text-sm text-gray-500">
+            <p>Usuario: {obtenerEmailUsuario()} • Rol: {user?.rol}</p>
+          </div>
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-6">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label="Nombre"
-                {...register('nombre', { required: 'El nombre es requerido' })}
-                error={errors.nombre?.message}
-              />
-              
-              <Input
-                label="Email"
-                type="email"
-                {...register('email', { 
-                  required: 'El email es requerido',
-                  pattern: {
-                    value: /^\S+@\S+$/i,
-                    message: 'Email inválido'
-                  }
-                })}
-                error={errors.email?.message}
-              />
-            </div>
-
             <CalificacionEstrellas
               name="satisfaccion"
               label="Satisfacción general con la plataforma"
@@ -172,6 +180,18 @@ export const InformesPage: React.FC = () => {
               value={watch('utilidad') || 0}
               onChange={(value) => setValue('utilidad', value)}
             />
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Añade detalles de tu calificación
+              </label>
+              <textarea
+                {...register('detallesCalificacion')}
+                rows={3}
+                className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                placeholder="¿Qué aspectos específicos te llevaron a dar esta calificación?"
+              />
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -209,8 +229,7 @@ export const InformesPage: React.FC = () => {
         </div>
 
         <div className="mt-6 text-center text-sm text-gray-500">
-          <p>Este formulario es completamente independiente y solo envía feedback a nuestro equipo.</p>
-          <p className="mt-1">📧 Reemplaza "TU_EMAIL_REAL@gmail.com" con tu email real</p>
+          <p>Los datos de usuario se envían automáticamente desde tu sesión.</p>
         </div>
       </div>
     </div>

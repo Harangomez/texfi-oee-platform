@@ -4,7 +4,8 @@ import {
   LayoutDashboard, 
   Settings, 
   Factory,
-  FileText 
+  //FileText 
+  MessageCircle
 } from 'lucide-react';
 //import { useAuth } from '../../contexts/AuthContext';
 import { clsx } from 'clsx';
@@ -13,7 +14,7 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Producción', href: '/produccion', icon: Factory },
   { name: 'Configuración', href: '/configuracion', icon: Settings },
-  { name: 'Informes', href: '/informes', icon: FileText },
+  { name: 'Feedback', href: '/informes', icon: MessageCircle },
 ];
 
 export const Sidebar: React.FC = () => {
