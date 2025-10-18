@@ -64,7 +64,7 @@ export const InformesPage: React.FC = () => {
       formData.append('_template', 'table');
 
       // ✅ Tu email actualizado
-      const response = await fetch('https://formsubmit.co/ajax/harangomez@gmail.com', {
+      const response = await fetch('https://formsubmit.co/ajax/8af7bf0f8591cbd1842472d483a222b8', {
         method: 'POST',
         body: formData,
       });
