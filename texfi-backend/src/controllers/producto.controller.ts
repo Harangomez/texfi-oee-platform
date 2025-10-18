@@ -59,7 +59,7 @@ export class ProductoController {
     return this.productoRepository.find(filter);
   }
 
-  // ✅ REEMPLAZAR el método getOperaciones con esta versión mejorada
+// ✅ REEMPLAZAR el método getOperaciones con esta versión mejorada
 @get('/productos/{id}/operaciones')
 @response(200, {
   description: 'Operaciones del producto',
