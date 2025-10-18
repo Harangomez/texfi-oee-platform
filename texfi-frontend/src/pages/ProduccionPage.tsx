@@ -66,7 +66,7 @@ export const ProduccionPage: React.FC = () => {
       const [maquinasData, operariosData, productosData] = await Promise.all([
         maquinaService.getAll(),
         operarioService.getAll(),
-        productoService.getAll()
+        productoService.getByTaller(taller.id!)
       ]);
 
       setMaquinas(maquinasData.filter(m => m.tallerId === taller.id && m.activo));

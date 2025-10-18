@@ -13,6 +13,11 @@ export const productoService = {
     return response.data;
   },
 
+  async getByTaller(tallerId: number): Promise<ProductoWithRelations[]> {
+    const response = await api.get(`/productos/taller/${tallerId}`);
+    return response.data;
+  },
+
   async create(producto: Omit<Producto, 'id'>): Promise<Producto> {
     const response = await api.post('/productos', producto);
     return response.data;
