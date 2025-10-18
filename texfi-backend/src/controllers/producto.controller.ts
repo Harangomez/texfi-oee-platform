@@ -95,6 +95,26 @@ export class ProductoController {
     return operaciones;
   }
 
+  @get('/productos/taller/{tallerId}')
+@response(200, {
+  description: 'Productos del taller',
+  content: {
+    'application/json': {
+      schema: {
+        type: 'array',
+        items: getModelSchemaRef(Producto, {includeRelations: true}),
+      },
+    },
+  },
+})
+async findByTallerId(
+  @param.path.number('tallerId') tallerId: number,
+): Promise<Producto[]> {
+  return this.productoRepository.find({
+    where: { tallerId }
+  });
+}
+
   @patch('/productos')
   @response(200, {
     description: 'Producto PATCH success count',
