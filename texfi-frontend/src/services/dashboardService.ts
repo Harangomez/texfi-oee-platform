@@ -382,26 +382,37 @@ export const dashboardService = {
         return calcularOEE([], [], [], undefined, filters.periodo);
       }
 
-      // PARA "ÚLTIMO DÍA": Calcular solo el último día disponible
-      if (filters.periodo === 'ultimo-dia') {
-        console.log('📅 Modo: Último día - calculando solo el día más reciente');
-        
-        const produccionesOrdenadas = [...produccionesFiltradas].sort((a, b) => 
-          new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
-        );
-        
-        const fechaMasReciente = produccionesOrdenadas[0].fecha.split('T')[0];
-        const produccionesDelDia = produccionesOrdenadas.filter(p => 
-          p.fecha.startsWith(fechaMasReciente)
-        );
-        
-        console.log('📊 Producciones del día más reciente:', {
-          fecha: fechaMasReciente,
-          cantidad: produccionesDelDia.length
-        });
-        
-        return calcularOEE(produccionesDelDia, detalles, productos, fechaMasReciente, 'ultimo-dia');
-      } 
+      // PARA "ÚLTIMO DÍA": Respetar estrictamente el rango de fechas
+if (filters.periodo === 'ultimo-dia') {
+  console.log('📅 Modo: Último día - respetando estrictamente el rango de fechas');
+  
+  // Obtener la fecha de ayer (formato YYYY-MM-DD)
+  const hoy = new Date();
+  const ayer = new Date(hoy);
+  ayer.setDate(hoy.getDate() - 1);
+  const fechaAyer = ayer.toISOString().split('T')[0];
+  
+  // Filtrar producciones específicamente de ayer
+  const produccionesDeAyer = produccionesFiltradas.filter((p: Produccion) => {
+  const fechaProduccion = new Date(p.fecha).toISOString().split('T')[0];
+  return fechaProduccion === fechaAyer;
+});
+  
+  console.log('📊 Producciones del día de ayer:', {
+    fechaRequerida: fechaAyer,
+    cantidad: produccionesDeAyer.length,
+    hayDatos: produccionesDeAyer.length > 0
+  });
+  
+  // Si no hay datos de ayer, retornar vacío
+  if (produccionesDeAyer.length === 0) {
+    console.log('📭 No hay producciones registradas para ayer, retornando datos vacíos');
+    return calcularOEE([], [], [], undefined, 'ultimo-dia');
+  }
+  
+  return calcularOEE(produccionesDeAyer, detalles, productos, fechaAyer, 'ultimo-dia');
+}
+
       // PARA OTROS PERÍODOS: Calcular AGRUPADO de todo el período
       else {
         console.log('📊 Modo: Período extendido - calculando AGREGADO de todo el período');
