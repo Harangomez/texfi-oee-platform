@@ -168,31 +168,38 @@ const calcularOEE = (
   };
 };
 
-// FUNCIONES DE FECHA (MANTENER LAS EXISTENTES)
+// FUNCIONES DE FECHA CORREGIDAS - VERSIÓN DEFINITIVA
 const getFechaInicioPeriodo = (periodo?: Periodo): string => {
   const fecha = new Date();
   
   switch (periodo) {
     case 'ultimo-dia': {
+      // Ayer (día completo)
       fecha.setDate(fecha.getDate() - 1);
       fecha.setHours(0, 0, 0, 0);
       break;
     }
     case 'ultima-semana': {
-      fecha.setDate(fecha.getDate() - 7 - fecha.getDay() + 1);
+      // Semana anterior completa (Lunes a Domingo)
+      // Hoy es Lunes 20 Oct -> Semana anterior: Lunes 13 - Domingo 19
+      fecha.setDate(fecha.getDate() - 7 - fecha.getDay() + 1); // Retrocede a lunes de la semana pasada
       fecha.setHours(0, 0, 0, 0);
       break;
     }
     case 'ultimo-mes': {
+      // Mes anterior completo
+      // Hoy Octubre -> Mes anterior: 1-30 Septiembre
       fecha.setMonth(fecha.getMonth() - 1);
-      fecha.setDate(1);
+      fecha.setDate(1); // Primer día del mes anterior
       fecha.setHours(0, 0, 0, 0);
       break;
     }
     case 'ultimo-año': {
+      // Año anterior completo
+      // Hoy 2025 -> Año anterior: 1 Ene - 31 Dic 2024
       fecha.setFullYear(fecha.getFullYear() - 1);
-      fecha.setMonth(0);
-      fecha.setDate(1);
+      fecha.setMonth(0); // Enero
+      fecha.setDate(1); // Día 1
       fecha.setHours(0, 0, 0, 0);
       break;
     }
@@ -211,25 +218,29 @@ const getFechaFinPeriodo = (periodo?: Periodo): string => {
   
   switch (periodo) {
     case 'ultimo-dia': {
+      // Fin de ayer
       fecha.setDate(fecha.getDate() - 1);
       fecha.setHours(23, 59, 59, 999);
       break;
     }
     case 'ultima-semana': {
-      fecha.setDate(fecha.getDate() - fecha.getDay());
+      // Domingo de la semana anterior
+      fecha.setDate(fecha.getDate() - 7 - fecha.getDay()); // Domingo de la semana pasada
       fecha.setHours(23, 59, 59, 999);
       break;
     }
     case 'ultimo-mes': {
+      // Último día del mes anterior
       fecha.setMonth(fecha.getMonth() - 1);
-      fecha.setDate(0);
+      fecha.setDate(0); // Último día del mes anterior
       fecha.setHours(23, 59, 59, 999);
       break;
     }
     case 'ultimo-año': {
+      // Último día del año anterior
       fecha.setFullYear(fecha.getFullYear() - 1);
-      fecha.setMonth(11);
-      fecha.setDate(31);
+      fecha.setMonth(11); // Diciembre
+      fecha.setDate(31); // Día 31
       fecha.setHours(23, 59, 59, 999);
       break;
     }
@@ -241,8 +252,7 @@ const getFechaFinPeriodo = (periodo?: Periodo): string => {
   
   console.log('📅 Fecha fin calculada para', periodo, ':', fecha.toISOString());
   return fecha.toISOString();
-};
-
+}
 const getFechaInicioTrend = (periodo?: Periodo, limite?: number): string => {
   const fecha = new Date();
   const cantidad = limite || 12;
@@ -413,11 +423,18 @@ if (filters.periodo === 'ultimo-dia') {
   return calcularOEE(produccionesDeAyer, detalles, productos, fechaAyer, 'ultimo-dia');
 }
 
-      // PARA OTROS PERÍODOS: Calcular AGRUPADO de todo el período
-      else {
-        console.log('📊 Modo: Período extendido - calculando AGREGADO de todo el período');
-        return calcularOEE(produccionesFiltradas, detalles, productos, undefined, filters.periodo);
-      }
+      // PARA OTROS PERÍODOS: Calcular AGRUPADO respetando estrictamente las fechas
+else {
+  console.log('📊 Modo: Período extendido - calculando AGREGADO de todo el período');
+  
+  // Verificar si hay datos en el período solicitado
+  if (produccionesFiltradas.length === 0) {
+    console.log(`📭 No hay producciones registradas para el período: ${filters.periodo}`);
+    return calcularOEE([], [], [], undefined, filters.periodo);
+  }
+  
+  return calcularOEE(produccionesFiltradas, detalles, productos, undefined, filters.periodo);
+}
 
     } catch (error) {
       console.error('Error calculando OEE:', error);

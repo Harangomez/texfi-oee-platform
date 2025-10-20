@@ -404,9 +404,9 @@ export const DashboardPage: React.FC = () => {
           ) : (
             <div className="flex items-center justify-center h-64">
               <p className="text-gray-500">
-                {cargando ? 'Cargando datos...' : 'No hay datos disponibles'}
-              </p>
-            </div>
+                {cargando ? 'Cargando datos...' : `No hay datos disponibles para el ${periodo.replace('-', ' ')}`}
+  </p>
+</div>
           )}
         </TabContent>
 
@@ -433,9 +433,9 @@ export const DashboardPage: React.FC = () => {
           ) : (
             <div className="flex items-center justify-center h-64">
               <p className="text-gray-500">
-                {cargando ? 'Cargando datos...' : 'No hay datos de tendencia disponibles'}
-              </p>
-            </div>
+                {cargando ? 'Cargando datos...' : `No hay datos disponibles para el ${periodo.replace('-', ' ')}`}
+  </p>
+</div>
           )}
         </TabContent>
 
@@ -460,9 +460,9 @@ export const DashboardPage: React.FC = () => {
           ) : (
             <div className="flex items-center justify-center h-64">
               <p className="text-gray-500">
-                {cargando ? 'Cargando datos...' : 'No hay datos de tiempos disponibles'}
-              </p>
-            </div>
+                {cargando ? 'Cargando datos...' : `No hay datos disponibles para el ${periodo.replace('-', ' ')}`}
+  </p>
+</div>
           )}
         </TabContent>
 
@@ -487,9 +487,9 @@ export const DashboardPage: React.FC = () => {
           ) : (
             <div className="flex items-center justify-center h-64">
               <p className="text-gray-500">
-                {cargando ? 'Cargando datos...' : 'No hay datos de producción disponibles'}
-              </p>
-            </div>
+                {cargando ? 'Cargando datos...' : `No hay datos disponibles para el ${periodo.replace('-', ' ')}`}
+  </p>
+</div>
           )}
         </TabContent>
       </Tabs>
