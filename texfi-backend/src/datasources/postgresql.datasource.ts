@@ -5,6 +5,8 @@ const config = {
   name: "postgresql",
   connector: "postgresql",
   url: process.env.DATABASE_URL, // ✅ Comentar esta línea para pruebas locales 
+  ssl: {rejectUnauthorized: false,}, // ✅ Necesario para Neon
+  
 
   /*//Comentar las siguientes líneas para actualizar el github que está conectado al despliegue
   url: '',
