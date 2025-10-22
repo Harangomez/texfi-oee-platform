@@ -154,7 +154,7 @@ export const ProduccionPage: React.FC = () => {
       });
 
       // Crear fecha CORREGIDA - Evitar problemas de timezone
-      const fechaSeleccionada = new Date(data.fecha + 'T12:00:00'); // Mediodía para evitar cambios de timezone
+      const fechaSeleccionada = new Date(data.fecha); // Mediodía para evitar cambios de timezone
       
       console.log('2. 📅 CONVERSIÓN DE FECHA:', {
         fechaString: data.fecha,
