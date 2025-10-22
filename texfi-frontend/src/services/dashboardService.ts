@@ -1,4 +1,4 @@
-// services/dashboardService.ts - VERSIÓN CORREGIDA LOOPBACK 4
+// services/dashboardService.ts - VERSIÓN CORREGIDA PARA DATE
 import { api } from '../services/api';
 import type { Produccion, DetalleProduccion, Producto } from '../types';
 
@@ -114,6 +114,16 @@ const calcularOEE = (
   const calidad = unidadesProducidas > 0 ? unidadesAprobadas / unidadesProducidas : 0;
   const oee = disponibilidad * rendimiento * calidad;
 
+  console.log('🎯 OEE Final calculado:', {
+    oee: oee * 100,
+    disponibilidad: disponibilidad * 100,
+    rendimiento: rendimiento * 100,
+    calidad: calidad * 100,
+    tiempoPlanificado,
+    tiempoOperativo,
+    unidadesProducidas
+  });
+
   return {
     oee: oee * 100,
     disponibilidad: disponibilidad * 100,
@@ -143,9 +153,6 @@ const getFechaInicioPeriodo = (periodo?: Periodo): string => {
     }
     case 'ultima-semana': {
       // Semana anterior completa (Lunes a Domingo)
-      // Ejemplo: Hoy 21 Oct 2024 -> Semana anterior: 14-20 Oct 2024
-      
-      // Obtener el lunes de esta semana
       const diaSemana = fecha.getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
       const diffLunes = diaSemana === 0 ? 6 : diaSemana - 1; // Días desde el lunes
       
@@ -156,7 +163,6 @@ const getFechaInicioPeriodo = (periodo?: Periodo): string => {
     }
     case 'ultimo-mes': {
       // Mes anterior completo
-      // Ejemplo: Hoy Oct 2024 -> Mes anterior: 1-30 Sep 2024
       fecha.setMonth(fecha.getMonth() - 1);
       fecha.setDate(1); // Primer día del mes anterior
       fecha.setHours(0, 0, 0, 0);
@@ -192,9 +198,6 @@ const getFechaFinPeriodo = (periodo?: Periodo): string => {
     }
     case 'ultima-semana': {
       // Domingo de la semana anterior
-      // Ejemplo: Hoy 21 Oct 2024 -> Domingo semana anterior: 20 Oct 2024
-      
-      // Obtener el domingo de esta semana
       const diaSemana = fecha.getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
       const diffDomingo = diaSemana === 0 ? 0 : 7 - diaSemana; // Días hasta domingo
       
@@ -205,7 +208,6 @@ const getFechaFinPeriodo = (periodo?: Periodo): string => {
     }
     case 'ultimo-mes': {
       // Último día del mes anterior
-      // Ejemplo: Hoy Oct 2024 -> Último día Sep 2024: 30 Sep 2024
       fecha.setDate(0); // Último día del mes anterior (mes actual - 1)
       fecha.setHours(23, 59, 59, 999);
       break;
@@ -315,101 +317,114 @@ export const dashboardService = {
         console.error('❌ ERROR: No se proporcionó tallerId en getOeeData');
         throw new Error('Se requiere tallerId para calcular OEE');
       }
-      
-      const fechaInicio = getFechaInicioPeriodo(filters.periodo);
-      const fechaFin = getFechaFinPeriodo(filters.periodo);
-      
-      // 🚨 CORRECCIÓN CRÍTICA: Sintaxis LoopBack 4
-      const filter = {
-        where: {
-          and: [
-            { tallerId: filters.tallerId },
-            { fecha: { between: [fechaInicio, fechaFin] } }
-          ]
-        }
-      };
 
-      console.log('🔴🔴🔴 getOeeData - FILTRO LB4:', JSON.stringify(filter, null, 2));
-      console.log('🔴🔴🔴 getOeeData - PERÍODO:', filters.periodo);
-
-      const [produccionesResponse, detallesResponse, productosResponse] = await Promise.all([
-        api.get('/producciones', { params: { filter: JSON.stringify(filter) } }),
-        api.get('/detalles-produccion', { params: { filter: JSON.stringify(filter) } }),
-        api.get('/productos', { params: { filter: JSON.stringify({ where: { tallerId: filters.tallerId } }) } })
-      ]);
-      
-      console.log('🔴🔴🔴 getOeeData - RESULTADOS FILTRADOS:', {
-        produccionesCount: produccionesResponse.data.length,
-        detallesCount: detallesResponse.data.length,
-        productosCount: productosResponse.data.length,
+      console.log('🔴🔴🔴 getOeeData - INICIANDO:', {
+        periodo: filters.periodo,
         tallerId: filters.tallerId
       });
 
-      const producciones = produccionesResponse.data;
-      const detalles = detallesResponse.data;
-      const productos = productosResponse.data;
-
-      // VERIFICACIÓN CRÍTICA: Si no hay datos en el período, retornar CEROS
-      if (producciones.length === 0) {
-        console.log(`📭 NO HAY DATOS para el período: ${filters.periodo} (${fechaInicio} a ${fechaFin})`);
-        return calcularOEE([], [], [], undefined, filters.periodo);
-      }
-
-      // COMPORTAMIENTO ESPECÍFICO POR PERÍODO
+      // 🎯 COMPORTAMIENTO ESPECÍFICO POR PERÍODO
       switch (filters.periodo) {
         case 'ultimo-dia': {
-  console.log('📅 Modo: Último día - usando filtro directo');
-  
-  const hoy = new Date();
-  const ayer = new Date(hoy);
-  ayer.setDate(hoy.getDate() - 1);
-  const fechaAyer = ayer.toISOString().split('T')[0]; // "2024-10-20"
-  
-  // 🚨 CORRECCIÓN: Crear filtro específico para DATE
-  const filterAyer = {
-    where: {
-      and: [
-        { tallerId: filters.tallerId },
-        { fecha: fechaAyer } // ← Filtro directo por DATE, no between!
-      ]
-    }
-  };
+          console.log('📅 Modo: Último día - filtro directo por DATE');
+          
+          // Calcular fecha de ayer en formato DATE (YYYY-MM-DD)
+          const hoy = new Date();
+          const ayer = new Date(hoy);
+          ayer.setDate(hoy.getDate() - 1);
+          const fechaAyer = ayer.toISOString().split('T')[0]; // "2024-10-21"
+          
+          console.log('🎯 Fecha de ayer requerida:', fechaAyer);
+          console.log('📊 Fecha de hoy de referencia:', hoy.toISOString().split('T')[0]);
 
-  console.log('🔴🔴🔴 FILTRO AYER LB4:', JSON.stringify(filterAyer, null, 2));
-  
-  const [produccionesResponse, detallesResponse, productosResponse] = await Promise.all([
-    api.get('/producciones', { params: { filter: JSON.stringify(filterAyer) } }),
-    api.get('/detalles-produccion', { params: { filter: JSON.stringify(filterAyer) } }),
-    api.get('/productos', { params: { filter: JSON.stringify({ where: { tallerId: filters.tallerId } }) } })
-  ]);
-  
-  console.log('📊 Producciones del día de ayer:', {
-    fechaRequerida: fechaAyer,
-    cantidad: produccionesResponse.data.length,
-    hayDatos: produccionesResponse.data.length > 0
-  });
-  
-  const produccionesAyer = produccionesResponse.data;
-  const detallesAyer = detallesResponse.data;
-  const productosAyer = productosResponse.data;
+          // 🚨 CORRECCIÓN: Filtro directo por DATE (sin between, sin horas)
+          const filterAyer = {
+            where: {
+              and: [
+                { tallerId: filters.tallerId },
+                { fecha: fechaAyer } // ← Buscar coincidencia exacta de DATE
+              ]
+            }
+          };
 
-  if (produccionesAyer.length === 0) {
-    console.log('📭 No hay producciones registradas para ayer, retornando datos vacíos');
-    return calcularOEE([], [], [], fechaAyer, 'ultimo-dia');
-  }
-  
-  return calcularOEE(produccionesAyer, detallesAyer, productosAyer, fechaAyer, 'ultimo-dia');
-}
+          console.log('🔴🔴🔴 FILTRO AYER (DATE):', JSON.stringify(filterAyer, null, 2));
+
+          const [produccionesResponse, detallesResponse, productosResponse] = await Promise.all([
+            api.get('/producciones', { params: { filter: JSON.stringify(filterAyer) } }),
+            api.get('/detalles-produccion', { params: { filter: JSON.stringify(filterAyer) } }),
+            api.get('/productos', { params: { filter: JSON.stringify({ where: { tallerId: filters.tallerId } }) } })
+          ]);
+          
+          const produccionesAyer = produccionesResponse.data;
+          const detallesAyer = detallesResponse.data;
+          const productosAyer = productosResponse.data;
+
+          console.log('📊 Resultados para ayer:', {
+            fechaRequerida: fechaAyer,
+            produccionesEncontradas: produccionesAyer.length,
+            detallesEncontrados: detallesAyer.length,
+            productosEncontrados: productosAyer.length,
+            primerRegistro: produccionesAyer.length > 0 ? produccionesAyer[0].fecha : 'N/A'
+          });
+
+          if (produccionesAyer.length === 0) {
+            console.log('📭 No hay producciones registradas para ayer');
+            return calcularOEE([], [], [], fechaAyer, 'ultimo-dia');
+          }
+          
+          return calcularOEE(produccionesAyer, detallesAyer, productosAyer, fechaAyer, 'ultimo-dia');
+        }
         
         default: {
-          // Para semana, mes y año: usar TODAS las producciones del período filtrado
-          console.log(`📊 Modo: ${filters.periodo} - calculando AGREGADO del período completo`);
+          // Para semana, mes y año: mantener la lógica con between
+          console.log(`📊 Modo: ${filters.periodo} - usando filtro between`);
+          
+          const fechaInicio = getFechaInicioPeriodo(filters.periodo);
+          const fechaFin = getFechaFinPeriodo(filters.periodo);
+          
+          const filter = {
+            where: {
+              and: [
+                { tallerId: filters.tallerId },
+                { fecha: { between: [fechaInicio, fechaFin] } }
+              ]
+            }
+          };
+
+          console.log('🔴🔴🔴 FILTRO DEFAULT (BETWEEN):', JSON.stringify(filter, null, 2));
+          console.log('📅 Rango de fechas:', {
+            fechaInicio: new Date(fechaInicio).toLocaleDateString('es-CO'),
+            fechaFin: new Date(fechaFin).toLocaleDateString('es-CO')
+          });
+
+          const [produccionesResponse, detallesResponse, productosResponse] = await Promise.all([
+            api.get('/producciones', { params: { filter: JSON.stringify(filter) } }),
+            api.get('/detalles-produccion', { params: { filter: JSON.stringify(filter) } }),
+            api.get('/productos', { params: { filter: JSON.stringify({ where: { tallerId: filters.tallerId } }) } })
+          ]);
+          
+          const producciones = produccionesResponse.data;
+          const detalles = detallesResponse.data;
+          const productos = productosResponse.data;
+
+          console.log('📊 Resultados para período:', {
+            periodo: filters.periodo,
+            produccionesEncontradas: producciones.length,
+            detallesEncontrados: detalles.length,
+            productosEncontrados: productos.length
+          });
+
+          if (producciones.length === 0) {
+            console.log(`📭 NO HAY DATOS para el período: ${filters.periodo}`);
+            return calcularOEE([], [], [], undefined, filters.periodo);
+          }
+          
           return calcularOEE(producciones, detalles, productos, undefined, filters.periodo);
         }
       }
 
     } catch (error) {
-      console.error('Error calculando OEE:', error);
+      console.error('❌ Error calculando OEE:', error);
       throw error;
     }
   },
@@ -427,7 +442,6 @@ export const dashboardService = {
       
       const fechaInicio = getFechaInicioTrend(filters.periodo, filters.limite);
 
-      // 🚨 CORRECCIÓN: Sintaxis LoopBack 4
       const filter = {
         where: {
           and: [
@@ -437,7 +451,8 @@ export const dashboardService = {
         }
       };
 
-      console.log('🔵🔵🔵 getOeeTrend - FILTRO LB4:', JSON.stringify(filter, null, 2));
+      console.log('🔵🔵🔵 getOeeTrend - FILTRO:', JSON.stringify(filter, null, 2));
+      console.log('📅 Fecha inicio tendencia:', new Date(fechaInicio).toLocaleDateString('es-CO'));
 
       const [produccionesResponse, detallesResponse, productosResponse] = await Promise.all([
         api.get('/producciones', { params: { filter: JSON.stringify(filter) } }),
@@ -445,11 +460,10 @@ export const dashboardService = {
         api.get('/productos', { params: { filter: JSON.stringify({ where: { tallerId: filters.tallerId } }) } })
       ]);
       
-      console.log('🔵🔵🔵 getOeeTrend - RESULTADOS FILTRADOS:', {
+      console.log('🔵🔵🔵 getOeeTrend - RESULTADOS:', {
         produccionesCount: produccionesResponse.data.length,
         detallesCount: detallesResponse.data.length,
-        productosCount: productosResponse.data.length,
-        tallerId: filters.tallerId
+        productosCount: productosResponse.data.length
       });
 
       const producciones = produccionesResponse.data;
@@ -458,6 +472,8 @@ export const dashboardService = {
 
       const grupos = agruparPorPeriodo(producciones, filters.periodo || 'ultimo-dia');
       
+      console.log('📊 Grupos formados:', Object.keys(grupos));
+
       const trendData: TrendData[] = Object.entries(grupos)
         .slice(-(filters.limite || 12))
         .map(([fecha, produccionesGrupo]) => {
@@ -477,9 +493,10 @@ export const dashboardService = {
           };
         });
 
+      console.log('📈 Datos de tendencia generados:', trendData.length, 'puntos');
       return trendData;
     } catch (error) {
-      console.error('Error calculando tendencia OEE:', error);
+      console.error('❌ Error calculando tendencia OEE:', error);
       throw error;
     }
   },
@@ -497,7 +514,6 @@ export const dashboardService = {
       
       const fechaInicio = getFechaInicioTrend(filters.periodo, filters.limite);
 
-      // 🚨 CORRECCIÓN: Sintaxis LoopBack 4
       const filter = {
         where: {
           and: [
@@ -507,13 +523,15 @@ export const dashboardService = {
         }
       };
 
-      console.log('⏰ getTimeTrend - FILTRO LB4:', JSON.stringify(filter, null, 2));
+      console.log('⏰ getTimeTrend - FILTRO:', JSON.stringify(filter, null, 2));
 
       const produccionesResponse = await api.get('/producciones', { 
         params: { filter: JSON.stringify(filter) } 
       });
       
       const producciones = produccionesResponse.data;
+
+      console.log('⏰ Producciones para tendencia de tiempos:', producciones.length);
 
       const grupos = agruparPorPeriodo(producciones, filters.periodo || 'ultimo-dia');
       
@@ -534,7 +552,7 @@ export const dashboardService = {
 
       return timeTrendData;
     } catch (error) {
-      console.error('Error calculando tendencia de tiempos:', error);
+      console.error('❌ Error calculando tendencia de tiempos:', error);
       throw error;
     }
   },
@@ -552,7 +570,6 @@ export const dashboardService = {
       
       const fechaInicio = getFechaInicioTrend(filters.periodo, filters.limite);
 
-      // 🚨 CORRECCIÓN: Sintaxis LoopBack 4
       const filter = {
         where: {
           and: [
@@ -562,7 +579,7 @@ export const dashboardService = {
         }
       };
 
-      console.log('📦 getProductionTrend - FILTRO LB4:', JSON.stringify(filter, null, 2));
+      console.log('📦 getProductionTrend - FILTRO:', JSON.stringify(filter, null, 2));
 
       const [produccionesResponse, detallesResponse] = await Promise.all([
         api.get('/producciones', { params: { filter: JSON.stringify(filter) } }),
@@ -571,6 +588,11 @@ export const dashboardService = {
       
       const producciones = produccionesResponse.data;
       const detalles = detallesResponse.data;
+
+      console.log('📦 Datos para tendencia producción:', {
+        producciones: producciones.length,
+        detalles: detalles.length
+      });
 
       const grupos = agruparPorPeriodo(producciones, filters.periodo || 'ultimo-dia');
       
@@ -596,7 +618,7 @@ export const dashboardService = {
 
       return productionTrendData;
     } catch (error) {
-      console.error('Error calculando tendencia de producción:', error);
+      console.error('❌ Error calculando tendencia de producción:', error);
       throw error;
     }
   }
