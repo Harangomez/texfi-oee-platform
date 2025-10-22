@@ -16,6 +16,7 @@ export interface OeeData {
   unidadesProducidas: number;
   unidadesDefectuosas: number;
   unidadesAprobadas: number;
+  unidadesPlaneadas: number; // NUEVO CAMPO
   fechaCalculo?: string;
   periodoCalculo?: string;
 }
@@ -42,7 +43,7 @@ export interface ProductionTrendData {
   unidadesAprobadas: number;
 }
 
-// Función para calcular OEE - MANTENER EXISTENTE
+// Función para calcular OEE - MANTENER EXISTENTE CON AGREGADO DE UNIDADES PLANEADAS
 const calcularOEE = (
   producciones: Produccion[], 
   detalles: DetalleProduccion[], 
@@ -62,6 +63,7 @@ const calcularOEE = (
       unidadesProducidas: 0,
       unidadesDefectuosas: 0,
       unidadesAprobadas: 0,
+      unidadesPlaneadas: 0, // NUEVO
       fechaCalculo,
       periodoCalculo
     };
@@ -100,15 +102,19 @@ const calcularOEE = (
   
   const unidadesAprobadas = unidadesProducidas - unidadesDefectuosas;
 
-  // CÁLCULOS OEE
-  const disponibilidad = tiempoPlanificado > 0 ? tiempoOperativo / tiempoPlanificado : 0;
-  
+  // NUEVO: Calcular unidades planeadas
   const tiempoEstandarTotal = detallesFiltrados.reduce((sum: number, d: DetalleProduccion) => {
     const producto = productos.find((p: Producto) => p.id === d.productoId);
     const tiempoEstandar = producto?.tiempoEstandar || 0;
     const cantidadProducida = d.cantidadProducida || 0;
     return sum + (cantidadProducida * tiempoEstandar);
   }, 0);
+
+  const tiempoEstandarPromedio = unidadesProducidas > 0 ? tiempoEstandarTotal / unidadesProducidas : 0;
+  const unidadesPlaneadas = tiempoEstandarPromedio > 0 ? tiempoPlanificado / tiempoEstandarPromedio : 0;
+
+  // CÁLCULOS OEE
+  const disponibilidad = tiempoPlanificado > 0 ? tiempoOperativo / tiempoPlanificado : 0;
   
   const rendimiento = tiempoOperativo > 0 ? tiempoEstandarTotal / tiempoOperativo : 0;
   const calidad = unidadesProducidas > 0 ? unidadesAprobadas / unidadesProducidas : 0;
@@ -121,7 +127,8 @@ const calcularOEE = (
     calidad: calidad * 100,
     tiempoPlanificado,
     tiempoOperativo,
-    unidadesProducidas
+    unidadesProducidas,
+    unidadesPlaneadas: Math.round(unidadesPlaneadas)
   });
 
   return {
@@ -135,6 +142,7 @@ const calcularOEE = (
     unidadesProducidas,
     unidadesDefectuosas,
     unidadesAprobadas,
+    unidadesPlaneadas: Math.round(unidadesPlaneadas), // NUEVO
     fechaCalculo,
     periodoCalculo
   };

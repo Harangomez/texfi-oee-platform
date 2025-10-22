@@ -291,63 +291,77 @@ export const DashboardPage: React.FC = () => {
                       label="OEE"
                       size="large"
                     />
-                    <div className="mt-4 text-center">
-  <p className="text-2xl font-bold text-gray-900">{datosOee.oee.toFixed(2)}%</p>
-  <p className="text-sm text-gray-600">
-    {datosOee.periodoCalculo === 'ultimo-dia' && datosOee.fechaCalculo 
-      ? `Valor del día ${datosOee.fechaCalculo}`
-      : `Valor agregado para ${periodo.replace('-', ' ')}`
-    }
-  </p>
-</div>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>Resumen de Métricas</CardTitle>
+                    <CardTitle>Resumen de Producción</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className="text-gray-600">Disponibilidad</p>
-                          <p className="text-2xl font-bold text-blue-600">
-                            {datosOee.disponibilidad.toFixed(2)}%
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-600">Rendimiento</p>
-                          <p className="text-2xl font-bold text-green-600">
-                            {datosOee.rendimiento.toFixed(2)}%
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-600">Calidad</p>
-                          <p className="text-2xl font-bold text-purple-600">
-                            {datosOee.calidad.toFixed(2)}%
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-600">Tiempo Operativo</p>
-                          <p className="text-lg font-semibold">
-                            {datosOee.tiempoOperativo} min
-                          </p>
+                      {/* SECCIÓN DE TIEMPOS */}
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-600 mb-3">Tiempos (horas)</h3>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div className="bg-blue-50 p-3 rounded-lg">
+                            <p className="text-blue-600 font-medium">Tiempo Planeado</p>
+                            <p className="text-xl font-bold text-blue-800">
+                              {(datosOee.tiempoPlanificado / 60).toFixed(2)}h
+                            </p>
+                          </div>
+                          <div className="bg-red-50 p-3 rounded-lg">
+                            <p className="text-red-600 font-medium">Tiempo de Paro</p>
+                            <p className="text-xl font-bold text-red-800">
+                              {(datosOee.tiempoParo / 60).toFixed(2)}h
+                            </p>
+                          </div>
+                          <div className="bg-green-50 p-3 rounded-lg">
+                            <p className="text-green-600 font-medium">Tiempo Operativo</p>
+                            <p className="text-xl font-bold text-green-800">
+                              {(datosOee.tiempoOperativo / 60).toFixed(2)}h
+                            </p>
+                          </div>
+                          <div className="bg-gray-50 p-3 rounded-lg">
+                            <p className="text-gray-600 font-medium">Eficiencia Tiempo</p>
+                            <p className="text-xl font-bold text-gray-800">
+                              {datosOee.tiempoPlanificado > 0 
+                                ? ((datosOee.tiempoOperativo / datosOee.tiempoPlanificado) * 100).toFixed(2)
+                                : '0.00'
+                              }%
+                            </p>
+                          </div>
                         </div>
                       </div>
+
+                      {/* SECCIÓN DE UNIDADES */}
                       <div className="border-t pt-4">
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Unidades Producidas:</span>
-                            <span className="font-semibold">{datosOee.unidadesProducidas}</span>
+                        <h3 className="text-sm font-medium text-gray-600 mb-3">Unidades</h3>
+                        <div className="space-y-3 text-sm">
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-600">Unidades Planeadas:</span>
+                            <span className="font-semibold text-blue-600">{datosOee.unidadesPlaneadas}</span>
                           </div>
-                          <div className="flex justify-between">
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-600">Unidades Producidas:</span>
+                            <span className="font-semibold text-gray-800">{datosOee.unidadesProducidas}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
                             <span className="text-gray-600">Unidades Defectuosas:</span>
                             <span className="font-semibold text-red-600">{datosOee.unidadesDefectuosas}</span>
                           </div>
-                          <div className="flex justify-between">
+                          <div className="flex justify-between items-center">
                             <span className="text-gray-600">Unidades Aprobadas:</span>
                             <span className="font-semibold text-green-600">{datosOee.unidadesAprobadas}</span>
+                          </div>
+                          <div className="flex justify-between items-center pt-2 border-t">
+                            <span className="text-gray-600">Eficiencia Producción:</span>
+                            <span className="font-semibold text-purple-600">
+                              {datosOee.unidadesPlaneadas > 0
+                                ? ((datosOee.unidadesProducidas / datosOee.unidadesPlaneadas) * 100).toFixed(2)
+                                : '0.00'
+                              }%
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -405,8 +419,8 @@ export const DashboardPage: React.FC = () => {
             <div className="flex items-center justify-center h-64">
               <p className="text-gray-500">
                 {cargando ? 'Cargando datos...' : `No hay datos disponibles para el ${periodo.replace('-', ' ')}`}
-  </p>
-</div>
+              </p>
+            </div>
           )}
         </TabContent>
 
@@ -434,8 +448,8 @@ export const DashboardPage: React.FC = () => {
             <div className="flex items-center justify-center h-64">
               <p className="text-gray-500">
                 {cargando ? 'Cargando datos...' : `No hay datos disponibles para el ${periodo.replace('-', ' ')}`}
-  </p>
-</div>
+              </p>
+            </div>
           )}
         </TabContent>
 
@@ -461,8 +475,8 @@ export const DashboardPage: React.FC = () => {
             <div className="flex items-center justify-center h-64">
               <p className="text-gray-500">
                 {cargando ? 'Cargando datos...' : `No hay datos disponibles para el ${periodo.replace('-', ' ')}`}
-  </p>
-</div>
+              </p>
+            </div>
           )}
         </TabContent>
 
@@ -488,8 +502,8 @@ export const DashboardPage: React.FC = () => {
             <div className="flex items-center justify-center h-64">
               <p className="text-gray-500">
                 {cargando ? 'Cargando datos...' : `No hay datos disponibles para el ${periodo.replace('-', ' ')}`}
-  </p>
-</div>
+              </p>
+            </div>
           )}
         </TabContent>
       </Tabs>
