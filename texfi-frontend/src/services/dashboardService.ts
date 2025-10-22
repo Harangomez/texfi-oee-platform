@@ -130,31 +130,41 @@ const calcularOEE = (
   };
 };
 
-// FUNCIONES DE FECHA - MANTENER EXISTENTES
+// FUNCIONES DE FECHA CORREGIDAS - VERSIÓN DEFINITIVA
 const getFechaInicioPeriodo = (periodo?: Periodo): string => {
   const fecha = new Date();
   
   switch (periodo) {
     case 'ultimo-dia': {
+      // Ayer (día completo)
       fecha.setDate(fecha.getDate() - 1);
       fecha.setHours(0, 0, 0, 0);
       break;
     }
     case 'ultima-semana': {
-      fecha.setDate(fecha.getDate() - 7 - fecha.getDay() + 1);
+      // Semana anterior completa (Lunes a Domingo)
+      // Hoy Lunes 21 Oct -> Semana anterior: Lunes 14 - Domingo 20
+      const diaDeLaSemana = fecha.getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
+      const diasDesdeLunes = diaDeLaSemana === 0 ? 6 : diaDeLaSemana - 1;
+      
+      // Retroceder a lunes de esta semana y luego 7 días más
+      fecha.setDate(fecha.getDate() - diasDesdeLunes - 7);
       fecha.setHours(0, 0, 0, 0);
       break;
     }
     case 'ultimo-mes': {
+      // Mes anterior completo
+      // Hoy Octubre -> Mes anterior: 1-30 Septiembre
       fecha.setMonth(fecha.getMonth() - 1);
-      fecha.setDate(1);
+      fecha.setDate(1); // Primer día del mes anterior
       fecha.setHours(0, 0, 0, 0);
       break;
     }
     case 'ultimo-año': {
+      // Año anterior completo
       fecha.setFullYear(fecha.getFullYear() - 1);
-      fecha.setMonth(0);
-      fecha.setDate(1);
+      fecha.setMonth(0); // Enero
+      fecha.setDate(1); // Día 1
       fecha.setHours(0, 0, 0, 0);
       break;
     }
@@ -173,25 +183,33 @@ const getFechaFinPeriodo = (periodo?: Periodo): string => {
   
   switch (periodo) {
     case 'ultimo-dia': {
+      // Fin de ayer
       fecha.setDate(fecha.getDate() - 1);
       fecha.setHours(23, 59, 59, 999);
       break;
     }
     case 'ultima-semana': {
-      fecha.setDate(fecha.getDate() - 7 - fecha.getDay());
+      // Domingo de la semana anterior
+      const diaDeLaSemana = fecha.getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
+      const diasHastaDomingo = diaDeLaSemana === 0 ? 0 : 7 - diaDeLaSemana;
+      
+      // Domingo de esta semana menos 7 días = Domingo semana anterior
+      fecha.setDate(fecha.getDate() - diasHastaDomingo - 1);
       fecha.setHours(23, 59, 59, 999);
       break;
     }
     case 'ultimo-mes': {
-      fecha.setMonth(fecha.getMonth() - 1);
-      fecha.setDate(0);
+      // Último día del mes anterior
+      fecha.setMonth(fecha.getMonth()); // Mes actual
+      fecha.setDate(0); // Último día del mes anterior
       fecha.setHours(23, 59, 59, 999);
       break;
     }
     case 'ultimo-año': {
+      // Último día del año anterior
       fecha.setFullYear(fecha.getFullYear() - 1);
-      fecha.setMonth(11);
-      fecha.setDate(31);
+      fecha.setMonth(11); // Diciembre
+      fecha.setDate(31); // Día 31
       fecha.setHours(23, 59, 59, 999);
       break;
     }
