@@ -222,7 +222,7 @@ export const ProductosTab: React.FC = () => {
           />
 
           <Input
-            label="Tiempo estándar (minutos)"
+            label="Tiempo estándar (Minutos requeridos por cada prenda)"
             type="number"
             {...register('tiempoEstandar')}
             error={errors.tiempoEstandar?.message}
