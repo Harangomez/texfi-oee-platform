@@ -228,27 +228,6 @@ const getFechaFinPeriodo = (periodo?: Periodo): string => {
   return fecha.toISOString();
 };
 
-/*const fechaInicio = getFechaInicioPeriodo(filters.periodo);
-const fechaFin = getFechaFinPeriodo(filters.periodo);
-
-// 🚨 VERIFICACIÓN CRÍTICA DE RANGO DE FECHAS
-const fechaInicioDate = new Date(fechaInicio);
-const fechaFinDate = new Date(fechaFin);
-const diferenciaDias = (fechaFinDate.getTime() - fechaInicioDate.getTime()) / (1000 * 60 * 60 * 24);
-
-console.log('🔴🔴🔴 VERIFICACIÓN RANGO FECHAS:', {
-  periodo: filters.periodo,
-  fechaInicio: fechaInicioDate.toLocaleDateString('es-CO'),
-  fechaFin: fechaFinDate.toLocaleDateString('es-CO'),
-  diferenciaDias: diferenciaDias.toFixed(2),
-  rangoValido: diferenciaDias > 0
-});
-
-if (diferenciaDias <= 0) {
-  console.error('❌ ERROR CRÍTICO: Rango de fechas inválido');
-  return calcularOEE([], [], [], undefined, filters.periodo);
-}*/
-
 const getFechaInicioTrend = (periodo?: Periodo, limite?: number): string => {
   const fecha = new Date();
   const cantidad = limite || 12;
@@ -379,31 +358,48 @@ export const dashboardService = {
       // COMPORTAMIENTO ESPECÍFICO POR PERÍODO
       switch (filters.periodo) {
         case 'ultimo-dia': {
-          console.log('📅 Modo: Último día - verificando fecha específica');
-          
-          const hoy = new Date();
-          const ayer = new Date(hoy);
-          ayer.setDate(hoy.getDate() - 1);
-          const fechaAyer = ayer.toISOString().split('T')[0];
-          
-          const produccionesDeAyer = producciones.filter((p: Produccion) => {
-            const fechaProduccion = new Date(p.fecha).toISOString().split('T')[0];
-            return fechaProduccion === fechaAyer;
-          });
-          
-          console.log('📊 Producciones del día de ayer:', {
-            fechaRequerida: fechaAyer,
-            cantidad: produccionesDeAyer.length,
-            hayDatos: produccionesDeAyer.length > 0
-          });
-          
-          if (produccionesDeAyer.length === 0) {
-            console.log('📭 No hay producciones registradas para ayer, retornando datos vacíos');
-            return calcularOEE([], [], [], undefined, 'ultimo-dia');
-          }
-          
-          return calcularOEE(produccionesDeAyer, detalles, productos, fechaAyer, 'ultimo-dia');
-        }
+  console.log('📅 Modo: Último día - usando filtro directo');
+  
+  const hoy = new Date();
+  const ayer = new Date(hoy);
+  ayer.setDate(hoy.getDate() - 1);
+  const fechaAyer = ayer.toISOString().split('T')[0]; // "2024-10-20"
+  
+  // 🚨 CORRECCIÓN: Crear filtro específico para DATE
+  const filterAyer = {
+    where: {
+      and: [
+        { tallerId: filters.tallerId },
+        { fecha: fechaAyer } // ← Filtro directo por DATE, no between!
+      ]
+    }
+  };
+
+  console.log('🔴🔴🔴 FILTRO AYER LB4:', JSON.stringify(filterAyer, null, 2));
+  
+  const [produccionesResponse, detallesResponse, productosResponse] = await Promise.all([
+    api.get('/producciones', { params: { filter: JSON.stringify(filterAyer) } }),
+    api.get('/detalles-produccion', { params: { filter: JSON.stringify(filterAyer) } }),
+    api.get('/productos', { params: { filter: JSON.stringify({ where: { tallerId: filters.tallerId } }) } })
+  ]);
+  
+  console.log('📊 Producciones del día de ayer:', {
+    fechaRequerida: fechaAyer,
+    cantidad: produccionesResponse.data.length,
+    hayDatos: produccionesResponse.data.length > 0
+  });
+  
+  const produccionesAyer = produccionesResponse.data;
+  const detallesAyer = detallesResponse.data;
+  const productosAyer = productosResponse.data;
+
+  if (produccionesAyer.length === 0) {
+    console.log('📭 No hay producciones registradas para ayer, retornando datos vacíos');
+    return calcularOEE([], [], [], fechaAyer, 'ultimo-dia');
+  }
+  
+  return calcularOEE(produccionesAyer, detallesAyer, productosAyer, fechaAyer, 'ultimo-dia');
+}
         
         default: {
           // Para semana, mes y año: usar TODAS las producciones del período filtrado
