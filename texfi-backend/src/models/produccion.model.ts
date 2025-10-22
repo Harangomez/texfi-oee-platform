@@ -12,7 +12,7 @@ import {ProduccionOperario} from './produccion-operario.model';
 export class Produccion extends Entity {
   
   @property({type: 'number', id: true, generated: true,}) id?: number;
-  @property({type: 'date', default: 'now', required: true,}) fecha: Date; //Cambio de string por Date-required por default - true por $now
+  @property({type: 'date', required: true,}) fecha: Date; //Cambio de string por Date-required por default - true por $now
   @property({type: 'number', default: 0, required: true,}) tiempoPlanificado: number; //Total minutos planeados en el día. Solicitar en horas en el frontend y convertir a minutos al guardar en la base de datos
   @property({type: 'number', default: 0, required: true,}) tiempoParo: number;
   @property({type: 'boolean', default: false,}) programado: boolean; // true = sí (programado), false = no (no programado)
