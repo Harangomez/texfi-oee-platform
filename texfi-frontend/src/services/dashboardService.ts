@@ -331,116 +331,109 @@ const getWeekNumber = (date: Date): number => {
 
 export const dashboardService = {
   async getOeeData(filters: {
-    tallerId?: number;
-    periodo?: Periodo;
-    fecha?: string;
-  }): Promise<OeeData> {
-    try {
-      const params: ApiFilters = {};
-      
-      // 🚨 CORRECCIÓN CRÍTICA: Asegurar que tallerId siempre se pase
-      if (filters.tallerId) {
-        params.tallerId = filters.tallerId;
-      } else {
-        console.error('❌ ERROR: No se proporcionó tallerId en getOeeData');
-        throw new Error('Se requiere tallerId para calcular OEE');
-      }
-      
-      const fechaInicio = getFechaInicioPeriodo(filters.periodo);
-      const fechaFin = getFechaFinPeriodo(filters.periodo);
-      
-      if (fechaInicio) {
-        params['fecha[gte]'] = fechaInicio;
-      }
-      if (fechaFin) {
-        params['fecha[lte]'] = fechaFin;
-      }
-
-      console.log('🔴🔴🔴 getOeeData - PARÁMETROS:', JSON.stringify(params, null, 2));
-      console.log('🔴🔴🔴 getOeeData - FILTROS:', filters);
-
-      // 🚨 CORRECCIÓN: Filtrar TODOS los datos por taller
-      const [produccionesResponse, detallesResponse, productosResponse] = await Promise.all([
-        api.get('/producciones', { params }),
-        api.get('/detalles-produccion', { params }),
-        api.get('/productos', { params: { tallerId: filters.tallerId } })
-      ]);
-      
-      console.log('🔴🔴🔴 getOeeData - RESULTADOS FILTRADOS:', {
-        produccionesCount: produccionesResponse.data.length,
-        detallesCount: detallesResponse.data.length,
-        productosCount: productosResponse.data.length,
-        tallerId: filters.tallerId
-      });
-
-      const producciones = produccionesResponse.data;
-      const detalles = detallesResponse.data;
-      const productos = productosResponse.data;
-
-      // 🚨 VERIFICACIÓN ADICIONAL: Filtrar producciones manualmente por si el backend no aplica el filtro
-      const produccionesFiltradas = producciones.filter((p: Produccion) => 
-        p.tallerId === filters.tallerId
-      );
-
-      console.log('🔍 Producciones después de filtro manual:', {
-        antes: producciones.length,
-        despues: produccionesFiltradas.length
-      });
-
-      if (produccionesFiltradas.length === 0) {
-        console.log('📭 No hay producciones del taller en el período seleccionado');
-        return calcularOEE([], [], [], undefined, filters.periodo);
-      }
-
-      // PARA "ÚLTIMO DÍA": Respetar estrictamente el rango de fechas
-if (filters.periodo === 'ultimo-dia') {
-  console.log('📅 Modo: Último día - respetando estrictamente el rango de fechas');
-  
-  // Obtener la fecha de ayer (formato YYYY-MM-DD)
-  const hoy = new Date();
-  const ayer = new Date(hoy);
-  ayer.setDate(hoy.getDate() - 1);
-  const fechaAyer = ayer.toISOString().split('T')[0];
-  
-  // Filtrar producciones específicamente de ayer
-  const produccionesDeAyer = produccionesFiltradas.filter((p: Produccion) => {
-  const fechaProduccion = new Date(p.fecha).toISOString().split('T')[0];
-  return fechaProduccion === fechaAyer;
-});
-  
-  console.log('📊 Producciones del día de ayer:', {
-    fechaRequerida: fechaAyer,
-    cantidad: produccionesDeAyer.length,
-    hayDatos: produccionesDeAyer.length > 0
-  });
-  
-  // Si no hay datos de ayer, retornar vacío
-  if (produccionesDeAyer.length === 0) {
-    console.log('📭 No hay producciones registradas para ayer, retornando datos vacíos');
-    return calcularOEE([], [], [], undefined, 'ultimo-dia');
-  }
-  
-  return calcularOEE(produccionesDeAyer, detalles, productos, fechaAyer, 'ultimo-dia');
-}
-
-      // PARA OTROS PERÍODOS: Calcular AGRUPADO respetando estrictamente las fechas
-else {
-  console.log('📊 Modo: Período extendido - calculando AGREGADO de todo el período');
-  
-  // Verificar si hay datos en el período solicitado
-  if (produccionesFiltradas.length === 0) {
-    console.log(`📭 No hay producciones registradas para el período: ${filters.periodo}`);
-    return calcularOEE([], [], [], undefined, filters.periodo);
-  }
-  
-  return calcularOEE(produccionesFiltradas, detalles, productos, undefined, filters.periodo);
-}
-
-    } catch (error) {
-      console.error('Error calculando OEE:', error);
-      throw error;
+  tallerId?: number;
+  periodo?: Periodo;
+  fecha?: string;
+}): Promise<OeeData> {
+  try {
+    const params: ApiFilters = {};
+    
+    if (filters.tallerId) {
+      params.tallerId = filters.tallerId;
+    } else {
+      console.error('❌ ERROR: No se proporcionó tallerId en getOeeData');
+      throw new Error('Se requiere tallerId para calcular OEE');
     }
-  },
+    
+    const fechaInicio = getFechaInicioPeriodo(filters.periodo);
+    const fechaFin = getFechaFinPeriodo(filters.periodo);
+    
+    if (fechaInicio) {
+      params['fecha[gte]'] = fechaInicio;
+    }
+    if (fechaFin) {
+      params['fecha[lte]'] = fechaFin;
+    }
+
+    console.log('🔴🔴🔴 getOeeData - PARÁMETROS:', JSON.stringify(params, null, 2));
+    console.log('🔴🔴🔴 getOeeData - FILTROS:', filters);
+
+    const [produccionesResponse, detallesResponse, productosResponse] = await Promise.all([
+      api.get('/producciones', { params }),
+      api.get('/detalles-produccion', { params }),
+      api.get('/productos', { params: { tallerId: filters.tallerId } })
+    ]);
+    
+    console.log('🔴🔴🔴 getOeeData - RESULTADOS FILTRADOS:', {
+      produccionesCount: produccionesResponse.data.length,
+      detallesCount: detallesResponse.data.length,
+      productosCount: productosResponse.data.length,
+      tallerId: filters.tallerId
+    });
+
+    const producciones = produccionesResponse.data;
+    const detalles = detallesResponse.data;
+    const productos = productosResponse.data;
+
+    const produccionesFiltradas = producciones.filter((p: Produccion) => 
+      p.tallerId === filters.tallerId
+    );
+
+    console.log('🔍 Producciones después de filtro manual:', {
+      antes: producciones.length,
+      despues: produccionesFiltradas.length,
+      periodo: filters.periodo,
+      fechaInicio,
+      fechaFin
+    });
+
+    // 🚨 VERIFICACIÓN CRÍTICA: Si no hay datos en el período, retornar CEROS
+    if (produccionesFiltradas.length === 0) {
+      console.log(`📭 NO HAY DATOS para el período: ${filters.periodo} (${fechaInicio} a ${fechaFin})`);
+      return calcularOEE([], [], [], undefined, filters.periodo);
+    }
+
+    // 🎯 COMPORTAMIENTO ESPECÍFICO POR PERÍODO
+    switch (filters.periodo) {
+      case 'ultimo-dia': {
+        console.log('📅 Modo: Último día - verificando fecha específica');
+        
+        const hoy = new Date();
+        const ayer = new Date(hoy);
+        ayer.setDate(hoy.getDate() - 1);
+        const fechaAyer = ayer.toISOString().split('T')[0];
+        
+        const produccionesDeAyer = produccionesFiltradas.filter((p: Produccion) => {
+          const fechaProduccion = new Date(p.fecha).toISOString().split('T')[0];
+          return fechaProduccion === fechaAyer;
+        });
+        
+        console.log('📊 Producciones del día de ayer:', {
+          fechaRequerida: fechaAyer,
+          cantidad: produccionesDeAyer.length,
+          hayDatos: produccionesDeAyer.length > 0
+        });
+        
+        if (produccionesDeAyer.length === 0) {
+          console.log('📭 No hay producciones registradas para ayer, retornando datos vacíos');
+          return calcularOEE([], [], [], undefined, 'ultimo-dia');
+        }
+        
+        return calcularOEE(produccionesDeAyer, detalles, productos, fechaAyer, 'ultimo-dia');
+      }
+      
+      default: {
+        // Para semana, mes y año: usar TODAS las producciones del período filtrado
+        console.log(`📊 Modo: ${filters.periodo} - calculando AGREGADO del período completo`);
+        return calcularOEE(produccionesFiltradas, detalles, productos, undefined, filters.periodo);
+      }
+    }
+
+  } catch (error) {
+    console.error('Error calculando OEE:', error);
+    throw error;
+  }
+},
 
   async getOeeTrend(filters: {
     tallerId?: number;
