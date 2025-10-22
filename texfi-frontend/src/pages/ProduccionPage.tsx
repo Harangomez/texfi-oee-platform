@@ -134,8 +134,9 @@ export const ProduccionPage: React.FC = () => {
 
     setCargando(true);
     try {
+      // CORRECCIÓN: Usar la fecha del formulario en lugar de new Date()
       const produccionData: Omit<Produccion, 'id'> = {
-        fecha: new Date(),
+        fecha: new Date(data.fecha), // ← CORREGIDO: usa data.fecha en lugar de new Date()
         tiempoPlanificado: Number(data.tiempoPlanificado),
         tiempoParo: Number(data.tiempoParo),
         motivoParo: data.motivoParo,
@@ -143,7 +144,7 @@ export const ProduccionPage: React.FC = () => {
         tallerId: taller.id
       };
 
-      console.log('Creando producción:', produccionData);
+      console.log('Creando producción con fecha:', data.fecha, produccionData.fecha);
       
       const produccion = await produccionService.create(produccionData);
       console.log('Producción creada con ID:', produccion.id);
