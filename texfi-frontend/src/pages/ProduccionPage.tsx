@@ -246,18 +246,18 @@ export const ProduccionPage: React.FC = () => {
         <div className="flex items-center text-sm text-gray-500">
           <Calendar className="w-4 h-4 mr-1" />
           {/* Esto solo es display, no afecta los datos */}
-          {new Date().toLocaleDateString('es-ES')} (Fecha actual - solo visual)
+          {new Date().toLocaleDateString('es-ES')} {/*(Fecha actual - solo visual)*/}
         </div>
       </div>
 
-      <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+      {/*<div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <p className="text-sm text-blue-800">
           <strong>Fecha seleccionada en formulario:</strong> {fechaFormulario}
         </p>
         <p className="text-sm text-blue-600 mt-1">
           Abre la consola del navegador (F12) para ver los logs detallados del proceso
         </p>
-      </div>
+      </div>*/}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Información General */}
