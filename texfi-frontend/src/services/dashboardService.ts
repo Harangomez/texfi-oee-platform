@@ -143,18 +143,20 @@ const getFechaInicioPeriodo = (periodo?: Periodo): string => {
     }
     case 'ultima-semana': {
       // Semana anterior completa (Lunes a Domingo)
-      // Hoy Lunes 21 Oct -> Semana anterior: Lunes 14 - Domingo 20
-      const diaDeLaSemana = fecha.getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
-      const diasDesdeLunes = diaDeLaSemana === 0 ? 6 : diaDeLaSemana - 1;
+      // Ejemplo: Hoy 21 Oct 2024 -> Semana anterior: 14-20 Oct 2024
       
-      // Retroceder a lunes de esta semana y luego 7 días más
-      fecha.setDate(fecha.getDate() - diasDesdeLunes - 7);
+      // Obtener el lunes de esta semana
+      const diaSemana = fecha.getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
+      const diffLunes = diaSemana === 0 ? 6 : diaSemana - 1; // Días desde el lunes
+      
+      // Lunes de esta semana menos 7 días = Lunes semana anterior
+      fecha.setDate(fecha.getDate() - diffLunes - 7);
       fecha.setHours(0, 0, 0, 0);
       break;
     }
     case 'ultimo-mes': {
       // Mes anterior completo
-      // Hoy Octubre -> Mes anterior: 1-30 Septiembre
+      // Ejemplo: Hoy Oct 2024 -> Mes anterior: 1-30 Sep 2024
       fecha.setMonth(fecha.getMonth() - 1);
       fecha.setDate(1); // Primer día del mes anterior
       fecha.setHours(0, 0, 0, 0);
@@ -190,18 +192,21 @@ const getFechaFinPeriodo = (periodo?: Periodo): string => {
     }
     case 'ultima-semana': {
       // Domingo de la semana anterior
-      const diaDeLaSemana = fecha.getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
-      const diasHastaDomingo = diaDeLaSemana === 0 ? 0 : 7 - diaDeLaSemana;
+      // Ejemplo: Hoy 21 Oct 2024 -> Domingo semana anterior: 20 Oct 2024
       
-      // Domingo de esta semana menos 7 días = Domingo semana anterior
-      fecha.setDate(fecha.getDate() - diasHastaDomingo - 1);
+      // Obtener el domingo de esta semana
+      const diaSemana = fecha.getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
+      const diffDomingo = diaSemana === 0 ? 0 : 7 - diaSemana; // Días hasta domingo
+      
+      // Domingo de esta semana menos 1 día = Domingo semana anterior
+      fecha.setDate(fecha.getDate() - diffDomingo - 1);
       fecha.setHours(23, 59, 59, 999);
       break;
     }
     case 'ultimo-mes': {
       // Último día del mes anterior
-      fecha.setMonth(fecha.getMonth()); // Mes actual
-      fecha.setDate(0); // Último día del mes anterior
+      // Ejemplo: Hoy Oct 2024 -> Último día Sep 2024: 30 Sep 2024
+      fecha.setDate(0); // Último día del mes anterior (mes actual - 1)
       fecha.setHours(23, 59, 59, 999);
       break;
     }
@@ -222,6 +227,27 @@ const getFechaFinPeriodo = (periodo?: Periodo): string => {
   console.log('📅 Fecha fin calculada para', periodo, ':', fecha.toISOString());
   return fecha.toISOString();
 };
+
+/*const fechaInicio = getFechaInicioPeriodo(filters.periodo);
+const fechaFin = getFechaFinPeriodo(filters.periodo);
+
+// 🚨 VERIFICACIÓN CRÍTICA DE RANGO DE FECHAS
+const fechaInicioDate = new Date(fechaInicio);
+const fechaFinDate = new Date(fechaFin);
+const diferenciaDias = (fechaFinDate.getTime() - fechaInicioDate.getTime()) / (1000 * 60 * 60 * 24);
+
+console.log('🔴🔴🔴 VERIFICACIÓN RANGO FECHAS:', {
+  periodo: filters.periodo,
+  fechaInicio: fechaInicioDate.toLocaleDateString('es-CO'),
+  fechaFin: fechaFinDate.toLocaleDateString('es-CO'),
+  diferenciaDias: diferenciaDias.toFixed(2),
+  rangoValido: diferenciaDias > 0
+});
+
+if (diferenciaDias <= 0) {
+  console.error('❌ ERROR CRÍTICO: Rango de fechas inválido');
+  return calcularOEE([], [], [], undefined, filters.periodo);
+}*/
 
 const getFechaInicioTrend = (periodo?: Periodo, limite?: number): string => {
   const fecha = new Date();
