@@ -48,10 +48,16 @@ export const ProduccionPage: React.FC = () => {
   const maquinaIds = watch('maquinaIds');
   const operarioIds = watch('operarioIds');
   const tiempoPlanificado = watch('tiempoPlanificado');
+  const fechaFormulario = watch('fecha');
 
   useEffect(() => {
     setHorasPlanificadas(tiempoPlanificado / 60);
   }, [tiempoPlanificado]);
+
+  // Log cuando cambia la fecha en el formulario
+  useEffect(() => {
+    console.log('📅 Fecha en formulario cambiada:', fechaFormulario);
+  }, [fechaFormulario]);
 
   const actualizarDesdeHoras = (horas: number) => {
     const minutos = Math.round(horas * 60);
@@ -79,9 +85,10 @@ export const ProduccionPage: React.FC = () => {
 
   useEffect(() => {
     cargarDatos();
-  }, [cargarDatos]);
+  }, [cargarDatos]); // ✅ CORREGIDO: cargarDatos en lugar de cargandoDatos
 
   const resetearFormulario = useCallback(() => {
+    console.log('🔄 Reseteando formulario a fecha actual');
     reset({
       fecha: new Date().toISOString().split('T')[0],
       tiempoPlanificado: 480,
@@ -134,9 +141,31 @@ export const ProduccionPage: React.FC = () => {
 
     setCargando(true);
     try {
-      // CORRECCIÓN: Usar la fecha del formulario en lugar de new Date()
+      console.log('🔴🔴🔴 INICIO ENVÍO DE PRODUCCIÓN 🔴🔴🔴');
+      console.log('1. 📋 DATOS DEL FORMULARIO:', {
+        fechaSeleccionada: data.fecha,
+        tiempoPlanificado: data.tiempoPlanificado,
+        tiempoParo: data.tiempoParo,
+        motivoParo: data.motivoParo,
+        programado: data.programado,
+        maquinas: data.maquinaIds,
+        operarios: data.operarioIds,
+        detalles: data.detalles
+      });
+
+      // Crear fecha CORREGIDA - Evitar problemas de timezone
+      const fechaSeleccionada = new Date(data.fecha + 'T12:00:00'); // Mediodía para evitar cambios de timezone
+      
+      console.log('2. 📅 CONVERSIÓN DE FECHA:', {
+        fechaString: data.fecha,
+        fechaObjeto: fechaSeleccionada,
+        fechaISO: fechaSeleccionada.toISOString(),
+        fechaLocal: fechaSeleccionada.toLocaleDateString('es-ES'),
+        timestamp: fechaSeleccionada.getTime()
+      });
+
       const produccionData: Omit<Produccion, 'id'> = {
-        fecha: new Date(data.fecha), // ← CORREGIDO: usa data.fecha en lugar de new Date()
+        fecha: fechaSeleccionada, // ← USA la fecha del formulario CORREGIDA
         tiempoPlanificado: Number(data.tiempoPlanificado),
         tiempoParo: Number(data.tiempoParo),
         motivoParo: data.motivoParo,
@@ -144,27 +173,40 @@ export const ProduccionPage: React.FC = () => {
         tallerId: taller.id
       };
 
-      console.log('Creando producción con fecha:', data.fecha, produccionData.fecha);
-      
-      const produccion = await produccionService.create(produccionData);
-      console.log('Producción creada con ID:', produccion.id);
+      console.log('3. 📦 DATOS A ENVIAR AL BACKEND:', produccionData);
+      console.log('4. 🚀 LLAMANDO A produccionService.create...');
 
+      const produccion = await produccionService.create(produccionData);
+      
+      console.log('5. ✅ RESPUESTA DEL BACKEND:', {
+        id: produccion.id,
+        fechaEnRespuesta: produccion.fecha,
+        tipoFechaRespuesta: typeof produccion.fecha
+      });
+
+      // Asociar máquinas
       if (data.maquinaIds && data.maquinaIds.length > 0) {
+        console.log('6. 🔧 ASOCIANDO MÁQUINAS:', data.maquinaIds);
         for (const maquinaId of data.maquinaIds) {
           const maquinaIdNumber = Number(maquinaId);
           await produccionService.agregarMaquina(produccion.id!, maquinaIdNumber);
         }
       }
 
+      // Asociar operarios
       if (data.operarioIds && data.operarioIds.length > 0) {
+        console.log('7. 👥 ASOCIANDO OPERARIOS:', data.operarioIds);
         for (const operarioId of data.operarioIds) {
           const operarioIdNumber = Number(operarioId);
           await produccionService.agregarOperario(produccion.id!, operarioIdNumber);
         }
       }
 
+      // Agregar detalles de producción
+      console.log('8. 📊 AGREGANDO DETALLES DE PRODUCCIÓN:');
       for (const detalle of data.detalles) {
         if (detalle.productoId && detalle.cantidadProducida > 0) {
+          console.log('   - Detalle:', detalle);
           await produccionService.addDetalle(produccion.id!, {
             cantidadProducida: Number(detalle.cantidadProducida),
             unidadesDefectuosas: Number(detalle.unidadesDefectuosas),
@@ -173,11 +215,12 @@ export const ProduccionPage: React.FC = () => {
         }
       }
 
+      console.log('9. 🎯 PRODUCCIÓN REGISTRADA EXITOSAMENTE');
       alert('Producción registrada exitosamente!');
       resetearFormulario();
       
     } catch (error) {
-      console.error('Error registrando producción:', error);
+      console.error('❌ ERROR registrando producción:', error);
       alert('Error al registrar la producción. Verifica los datos.');
     } finally {
       setCargando(false);
@@ -202,8 +245,18 @@ export const ProduccionPage: React.FC = () => {
         <h1 className="text-2xl font-bold text-gray-900">Registro de Producción</h1>
         <div className="flex items-center text-sm text-gray-500">
           <Calendar className="w-4 h-4 mr-1" />
-          {new Date().toLocaleDateString('es-ES')}
+          {/* Esto solo es display, no afecta los datos */}
+          {new Date().toLocaleDateString('es-ES')} (Fecha actual - solo visual)
         </div>
+      </div>
+
+      <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <p className="text-sm text-blue-800">
+          <strong>Fecha seleccionada en formulario:</strong> {fechaFormulario}
+        </p>
+        <p className="text-sm text-blue-600 mt-1">
+          Abre la consola del navegador (F12) para ver los logs detallados del proceso
+        </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -279,7 +332,6 @@ export const ProduccionPage: React.FC = () => {
                   {...register('programado')}
                   className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                 />
-                {/* CAMBIADO: "Producción programada" por "Paro programado" */}
                 <span className="text-sm font-medium text-gray-700">Paro programado</span>
               </label>
             </div>
@@ -295,12 +347,12 @@ export const ProduccionPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Recursos Asociados al Paro - TÍTULO CAMBIADO */}
+        {/* Recursos Asociados al Paro */}
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Recursos Asociados al Paro</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Máquinas Paradas - TÍTULO CAMBIADO */}
+            {/* Máquinas Paradas */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Máquinas Paradas
@@ -330,7 +382,7 @@ export const ProduccionPage: React.FC = () => {
               )}
             </div>
 
-            {/* Operarios Afectados - TÍTULO CAMBIADO */}
+            {/* Operarios Afectados */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Operarios Afectados
